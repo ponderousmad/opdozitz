@@ -1,6 +1,6 @@
 using System;
 
-namespace opdozitz
+namespace Opdozitz
 {
     static class Program
     {
