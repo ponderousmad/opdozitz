@@ -14,31 +14,55 @@ using Microsoft.Xna.Framework.Storage;
 
 namespace Opdozitz
 {
+    enum ZitState
+    {
+        Floor,
+        Ceiling,
+        Transition,
+        Dead
+    }
+
     class Zit
     {
-        private Texture2D mSprite = null;
-        private Vector2 mLocation = new Vector2(kSize, GameMain.TileSize * 2 - GameMain.GirderWidth - (kSize / 2f));
+        private static Texture2D sSprite = null;
+        private Vector2 mLocation = new Vector2(kSize + GameMain.ColumnXOffset, GameMain.TileSize * 2 - GameMain.GirderWidth - (kSize / 2f) + GameMain.ColumnVOffset);
         private float mAngle = 0;
         private float mSpeed = kSpeedFactor;
+        private ZitState mState = ZitState.Floor;
+        private Tile mCurrentTile = null;
+        private TileColumn mCurrentColumn = null;
 
         private const int kSize = 20;
         private const float kAngleIncrement = (float)(kSpeedFactor / kSize * Math.PI);
         private const float kSpeedFactor = kSize / 1000f;
 
-        public void LoadContent(ContentManager content)
+        public static void LoadContent(ContentManager content)
         {
-            mSprite = content.Load<Texture2D>("Images/Zit");
+            sSprite = content.Load<Texture2D>("Images/Zit");
         }
 
         internal void Update(GameTime gameTime)
         {
+
             mAngle += gameTime.ElapsedGameTime.Milliseconds * kAngleIncrement;
-            mLocation.X += gameTime.ElapsedGameTime.Milliseconds * mSpeed;
+            mLocation.X += gameTime.ElapsedGameTime.Milliseconds * mSpeed * ((mState == ZitState.Floor) ? 1 : -1);
         }
 
         public void Draw(SpriteBatch batch)
         {
-            batch.Draw(mSprite, mLocation, null, Color.White, mAngle, new Vector2(mSprite.Width / 2, mSprite.Height / 2), kSize / (float)mSprite.Width, SpriteEffects.None, 0);
+            batch.Draw(sSprite, mLocation, null, Color.White, mAngle, new Vector2(sSprite.Width / 2, sSprite.Height / 2), kSize / (float)sSprite.Width, SpriteEffects.None, 0);
+        }
+
+        public Tile CurrentTile
+        {
+            get { return mCurrentTile; }
+            set { mCurrentTile = value; }
+        }
+
+        public TileColumn CurrentColumn
+        {
+            get { return mCurrentColumn; }
+            set { mCurrentColumn = value; }
         }
     }
 }

@@ -14,45 +14,76 @@ using Microsoft.Xna.Framework.Storage;
 
 namespace Opdozitz
 {
-    enum TileType
+    [Flags]
+    enum TileParts
     {
-        Empty,
-        Bottom,
-        /*
-        SlopeUp,
-        SlopeDown,
-        Spikes
-         */
+        Empty = 0,
+        Top = 1,
+        Bottom = 2,
+        SlantUp = 4,
+        SlantDown = 8,
+        //        SpikesUp = 16,
+        //        SpikesDown = 32
     }
 
     class Tile
     {
-        private TileType mType = TileType.Empty;
+        private TileParts mParts = TileParts.Empty;
+        private int mLeft, mTop;
 
-        private static List<Texture2D> sTileImages;
+        private static Dictionary<TileParts, Texture2D> sTileImages;
 
         internal static void LoadContent(ContentManager content)
         {
-            sTileImages = new List<Texture2D>();
-            foreach(TileType type in Enum.GetValues(typeof(TileType)))
+            sTileImages = new Dictionary<TileParts, Texture2D>();
+            foreach (TileParts part in AllParts())
             {
-                sTileImages.Add(content.Load<Texture2D>("Images/Tile" + type.ToString()));
+                sTileImages.Add(part, content.Load<Texture2D>("Images/Tile" + part.ToString()));
             }
         }
 
-        public Tile(TileType type)
+        private static Array AllParts()
         {
-            mType = type;
+            return Enum.GetValues(typeof(TileParts));
         }
 
-        public TileType Type
+        public Tile(TileParts parts, int left, int top)
         {
-            get { return mType; }
+            mParts = parts;
+            mLeft = left;
+            mTop = top;
         }
 
-        internal void Draw(SpriteBatch batch, int x, int y)
+        public int Top
         {
-            batch.Draw(sTileImages[(int)Type], new Rectangle(x, y, GameMain.TileSize, GameMain.TileSize), Color.White);
+            get { return mTop; }
+            set { mTop = value; }
+        }
+
+        public int Left
+        {
+            get { return mLeft; }
+        }
+
+        public Tile Clone(int newTop)
+        {
+            return new Tile(Parts, mLeft, newTop);
+        }
+
+        public TileParts Parts
+        {
+            get { return mParts; }
+        }
+
+        internal void Draw(SpriteBatch batch)
+        {
+            foreach (TileParts part in AllParts())
+            {
+                if ((Parts & part) != 0)
+                {
+                    batch.Draw(sTileImages[part], new Rectangle(mLeft - GameMain.TileDrawOffset, mTop - GameMain.TileDrawOffset, GameMain.TileDrawSize, GameMain.TileDrawSize), Color.White);
+                }
+            }
         }
     }
 }
