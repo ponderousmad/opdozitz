@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -10,20 +11,24 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Net;
 using Microsoft.Xna.Framework.Storage;
+using Opdozitz.Utils;
 
-namespace opdozitz
+namespace Opdozitz
 {
     /// <summary>
-    /// This is the main type for your game
+    /// Core Game Logic
     /// </summary>
     public class GameMain : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        private GraphicsDeviceManager mGraphics;
+        private SpriteBatch mSpriteBatch;
+        private Zit mZit;
+        private List<TileColumn> mColumns = new List<TileColumn>();
+
 
         public GameMain()
         {
-            graphics = new GraphicsDeviceManager(this);
+            mGraphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
 
@@ -35,7 +40,7 @@ namespace opdozitz
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            mZit = new Zit();
 
             base.Initialize();
         }
@@ -47,9 +52,44 @@ namespace opdozitz
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            mSpriteBatch = new SpriteBatch(GraphicsDevice);
+            mZit.LoadContent(Content);
 
             // TODO: use this.Content to load your game content here
+        }
+
+        private static string ContentBuildPath
+        {
+            get
+            {
+                string assemblyPath = System.IO.Path.GetDirectoryName(typeof(GameMain).Assembly.Location);
+                System.IO.DirectoryInfo path = new System.IO.DirectoryInfo(assemblyPath);
+                return System.IO.Path.Combine(path.Parent.Parent.Parent.FullName, "Content");
+            }
+        }
+
+        private System.IO.Stream Load(string resource)
+        {
+            return GetType().Assembly.GetManifestResourceStream(resource);
+        }
+
+        private void LoadLevel(int number)
+        {
+            using (System.IO.Stream stream = Load("opdozitz.Content.Levels.Level" + number.ToString() + ".xml"))
+            using (System.IO.TextReader reader = new System.IO.StreamReader(stream))
+            {
+                mColumns.Clear();
+                XDocument doc = System.Xml.Linq.XDocument.Load(reader);
+                XElement root = doc.Elements("Level").First();
+                foreach (XElement e in root.Elements("Column"))
+                {
+                    mColumns.Add(new TileColumn());
+                    foreach (XElement t in root.Elements("Tile"))
+                    {
+                        mColumns.Last().Add(new Tile(e.Read<TileType>("type")));
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -72,7 +112,7 @@ namespace opdozitz
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            // TODO: Add your update logic here
+            mZit.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -85,6 +125,9 @@ namespace opdozitz
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            mSpriteBatch.Begin();
+            mZit.Draw(mSpriteBatch);
+            mSpriteBatch.End();
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
