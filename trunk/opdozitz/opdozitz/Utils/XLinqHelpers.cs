@@ -31,6 +31,16 @@ namespace Opdozitz.Utils
             return DocumentWriter.AsDouble(e.Attribute(name).Value);
         }
 
+        public static bool ReadBool(this XElement e, string name, bool defaultValue)
+        {
+            string attribute = e.Attribute(name) != null ? e.Attribute(name).Value : null;
+            if (string.IsNullOrEmpty(attribute) || (attribute.ToLowerInvariant() == defaultValue.ToString().ToLowerInvariant()))
+            {
+                return defaultValue;
+            }
+            return !defaultValue;
+        }
+
         public static string Read(this XElement e, string name)
         {
             return e.Attribute(name).Value;

@@ -21,13 +21,23 @@ namespace Opdozitz
     public class GameMain : Microsoft.Xna.Framework.Game
     {
         public const int TileSize = 50;
-        public const int GirderWidth = 5;
+        public const int GirderWidth = 3;
+        public const int TileDrawOffset = 5;
+        public const int TileDrawSize = TileSize + (TileDrawOffset * 2);
+        public const int ColumnXOffset = 25;
+        public const int ColumnVOffset = 0;
 
         private GraphicsDeviceManager mGraphics;
         private SpriteBatch mSpriteBatch;
-        private Zit mZit;
+        private List<Zit> mZits = new List<Zit>();
         private List<TileColumn> mColumns = new List<TileColumn>();
+        private Texture2D mBackground;
+        private Texture2D mFrame;
+        private Texture2D mSelectColumn;
 
+        private int mSelectedColumn = 1;
+
+        private KeyboardState mLastKeyboardState = new KeyboardState();
 
         public GameMain()
         {
@@ -43,8 +53,6 @@ namespace Opdozitz
         /// </summary>
         protected override void Initialize()
         {
-            mZit = new Zit();
-
             Window.Title = "Opdozitz - Reddit Game Jam 02";
 
             base.Initialize();
@@ -60,10 +68,11 @@ namespace Opdozitz
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             mSpriteBatch = new SpriteBatch(GraphicsDevice);
-            mZit.LoadContent(Content);
+            Zit.LoadContent(Content);
             Tile.LoadContent(Content);
-
-            // TODO: use this.Content to load your game content here
+            mBackground = Content.Load<Texture2D>("Images/Background");
+            mFrame = Content.Load<Texture2D>("Images/Frame");
+            mSelectColumn = Content.Load<Texture2D>("Images/SelectColumn");
         }
 
         private static string ContentBuildPath
@@ -76,27 +85,34 @@ namespace Opdozitz
             }
         }
 
-        private System.IO.Stream Load(string resource)
+        private System.IO.Stream Load(string location, string resource)
         {
-            return GetType().Assembly.GetManifestResourceStream(resource);
+#if DEBUG
+            return new System.IO.FileStream(System.IO.Path.Combine(System.IO.Path.Combine(ContentBuildPath, location), resource), System.IO.FileMode.Open, System.IO.FileAccess.Read);
+#else
+            return GetType().Assembly.GetManifestResourceStream("Opdozitz.Content." + location + "." + resource);
+#endif
         }
 
         private void LoadLevel(int number)
         {
-            using (System.IO.Stream stream = Load("Opdozitz.Content.Levels.Level" + number.ToString() + ".xml"))
+            using (System.IO.Stream stream = Load("Levels", "Level" + number.ToString() + ".xml"))
             using (System.IO.TextReader reader = new System.IO.StreamReader(stream))
             {
-                int columnLocation = 0;
-                int columnTop = 0;
+                int columnLocation = ColumnXOffset;
                 mColumns.Clear();
+                mZits.Clear();
+                mZits.Add(new Zit());
                 XDocument doc = System.Xml.Linq.XDocument.Load(reader);
                 XElement root = doc.Elements("Level").First();
                 foreach (XElement e in root.Elements("Column"))
                 {
-                    mColumns.Add(new TileColumn(columnLocation, columnTop));
+                    mColumns.Add(new TileColumn(columnLocation, ColumnVOffset, e.ReadBool("locked", false)));
+                    int tileLocation = ColumnVOffset;
                     foreach (XElement t in e.Elements("Tile"))
                     {
-                        mColumns.Last().Add(new Tile(t.Read<TileType>("type")));
+                        mColumns.Last().Add(new Tile(t.Read<TileParts>("type"), columnLocation, tileLocation));
+                        tileLocation += TileSize;
                     }
                     columnLocation += TileSize;
                 }
@@ -123,9 +139,69 @@ namespace Opdozitz
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            mZit.Update(gameTime);
+            KeyboardState keyboardState = Keyboard.GetState();
 
+            if (IsKeyPress(keyboardState, Keys.Up))
+            {
+                if (CanMoveColumn(mSelectedColumn))
+                {
+                    mColumns[mSelectedColumn].MoveUp();
+                }
+            }
+            else if (IsKeyPress(keyboardState, Keys.Down))
+            {
+                if (CanMoveColumn(mSelectedColumn))
+                {
+                    mColumns[mSelectedColumn].MoveDown();
+                }
+            }
+
+            if (IsKeyPress(keyboardState, Keys.Left))
+            {
+                for (int column = mSelectedColumn-1; column > 0; --column)
+                {
+                    if (CanMoveColumn(column))
+                    {
+                        mSelectedColumn = column;
+                        break;
+                    }
+                }
+            }
+            else if (IsKeyPress(keyboardState, Keys.Right))
+            {
+                for (int column = mSelectedColumn + 1; column < mColumns.Count; ++column)
+                {
+                    if (CanMoveColumn(column))
+                    {
+                        mSelectedColumn = column;
+                        break;
+                    }
+                }
+            }
+
+
+            foreach (Zit zit in mZits)
+            {
+                zit.Update(gameTime);
+            }
+
+            foreach (TileColumn column in mColumns)
+            {
+                column.Update(gameTime);
+            }
+
+            mLastKeyboardState = keyboardState;
             base.Update(gameTime);
+        }
+
+        private bool CanMoveColumn(int column)
+        {
+            return !(mColumns[column].Locked || mColumns[column].Moving);
+        }
+
+        private bool IsKeyPress(KeyboardState keyboardState, Keys key)
+        {
+            return keyboardState.IsKeyDown(key) && !mLastKeyboardState.IsKeyDown(key);
         }
 
         /// <summary>
@@ -134,16 +210,22 @@ namespace Opdozitz
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
             mSpriteBatch.Begin();
-            mZit.Draw(mSpriteBatch);
+            mSpriteBatch.Draw(mBackground, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
+
             foreach (TileColumn column in mColumns)
             {
                 column.Draw(mSpriteBatch);
             }
+            foreach (Zit zit in mZits)
+            {
+                zit.Draw(mSpriteBatch);
+            }
+            mSpriteBatch.Draw(mFrame, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
+            mSpriteBatch.Draw(mSelectColumn, new Rectangle(mColumns[mSelectedColumn].Left - TileDrawOffset, mColumns[mSelectedColumn].Top + TileSize / 2 - TileDrawOffset, mSelectColumn.Width, mSelectColumn.Height), Color.White);
             mSpriteBatch.End();
-            // TODO: Add your drawing code here
 
             base.Draw(gameTime);
         }
