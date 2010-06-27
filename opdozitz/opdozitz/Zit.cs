@@ -17,11 +17,11 @@ namespace Opdozitz
     class Zit
     {
         private Texture2D mSprite = null;
-        private Vector2 mLocation = new Vector2(kSize, kSize);
+        private Vector2 mLocation = new Vector2(kSize, GameMain.TileSize * 2 - GameMain.GirderWidth - (kSize / 2f));
         private float mAngle = 0;
         private float mSpeed = kSpeedFactor;
 
-        private const int kSize = 100;
+        private const int kSize = 20;
         private const float kAngleIncrement = (float)(kSpeedFactor / kSize * Math.PI);
         private const float kSpeedFactor = kSize / 1000f;
 

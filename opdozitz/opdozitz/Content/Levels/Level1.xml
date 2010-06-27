@@ -2,5 +2,26 @@
 <Level>
   <Column>
     <Tile type="Empty" />
+    <Tile type="Bottom" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Bottom" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Bottom" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Bottom" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Bottom" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Bottom" />
   </Column>
 </Level>

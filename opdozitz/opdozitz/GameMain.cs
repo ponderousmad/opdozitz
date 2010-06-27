@@ -20,6 +20,9 @@ namespace Opdozitz
     /// </summary>
     public class GameMain : Microsoft.Xna.Framework.Game
     {
+        public const int TileSize = 50;
+        public const int GirderWidth = 5;
+
         private GraphicsDeviceManager mGraphics;
         private SpriteBatch mSpriteBatch;
         private Zit mZit;
@@ -42,7 +45,11 @@ namespace Opdozitz
         {
             mZit = new Zit();
 
+            Window.Title = "Opdozitz - Reddit Game Jam 02";
+
             base.Initialize();
+
+            LoadLevel(1);
         }
 
         /// <summary>
@@ -54,6 +61,7 @@ namespace Opdozitz
             // Create a new SpriteBatch, which can be used to draw textures.
             mSpriteBatch = new SpriteBatch(GraphicsDevice);
             mZit.LoadContent(Content);
+            Tile.LoadContent(Content);
 
             // TODO: use this.Content to load your game content here
         }
@@ -75,19 +83,22 @@ namespace Opdozitz
 
         private void LoadLevel(int number)
         {
-            using (System.IO.Stream stream = Load("opdozitz.Content.Levels.Level" + number.ToString() + ".xml"))
+            using (System.IO.Stream stream = Load("Opdozitz.Content.Levels.Level" + number.ToString() + ".xml"))
             using (System.IO.TextReader reader = new System.IO.StreamReader(stream))
             {
+                int columnLocation = 0;
+                int columnTop = 0;
                 mColumns.Clear();
                 XDocument doc = System.Xml.Linq.XDocument.Load(reader);
                 XElement root = doc.Elements("Level").First();
                 foreach (XElement e in root.Elements("Column"))
                 {
-                    mColumns.Add(new TileColumn());
-                    foreach (XElement t in root.Elements("Tile"))
+                    mColumns.Add(new TileColumn(columnLocation, columnTop));
+                    foreach (XElement t in e.Elements("Tile"))
                     {
-                        mColumns.Last().Add(new Tile(e.Read<TileType>("type")));
+                        mColumns.Last().Add(new Tile(t.Read<TileType>("type")));
                     }
+                    columnLocation += TileSize;
                 }
             }
         }
@@ -127,6 +138,10 @@ namespace Opdozitz
 
             mSpriteBatch.Begin();
             mZit.Draw(mSpriteBatch);
+            foreach (TileColumn column in mColumns)
+            {
+                column.Draw(mSpriteBatch);
+            }
             mSpriteBatch.End();
             // TODO: Add your drawing code here
 
