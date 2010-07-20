@@ -75,9 +75,9 @@
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
+    <Tile type="Top" />
+    <Tile type="SlantDown" />
+    <Tile type="Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
@@ -105,8 +105,22 @@
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
+    <Tile type="Top" />
+    <Tile type="SlantDown" />
+    <Tile type="Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
+    <Tile type="Top, Bottom" />
+  </Column>
+  <Column>
+    <Tile type="Top, Bottom" />
+    <Tile type="Top, Bottom" />
+    <Tile type="Top, Bottom" />
+    <Tile type="Top, Bottom" />
+    <Tile type="Top, Bottom" />
+    <Tile type="Top" />
+    <Tile type="SlantDown" />
+    <Tile type="Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
@@ -119,23 +133,9 @@
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-  </Column>
-  <Column>
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
-    <Tile type="Top, Bottom" />
+    <Tile type="Top" />
+    <Tile type="SlantDown" />
+    <Tile type="Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />
     <Tile type="Top, Bottom" />

@@ -102,7 +102,6 @@ namespace Opdozitz
                 int columnLocation = ColumnXOffset;
                 mColumns.Clear();
                 mZits.Clear();
-                mZits.Add(new Zit());
                 XDocument doc = System.Xml.Linq.XDocument.Load(reader);
                 XElement root = doc.Elements("Level").First();
                 foreach (XElement e in root.Elements("Column"))
@@ -116,6 +115,7 @@ namespace Opdozitz
                     }
                     columnLocation += TileSize;
                 }
+                mZits.Add(new Zit(mColumns[0],mColumns[0][1]));
             }
         }
 
@@ -182,7 +182,7 @@ namespace Opdozitz
 
             foreach (Zit zit in mZits)
             {
-                zit.Update(gameTime);
+                zit.Update(gameTime, mColumns);
             }
 
             foreach (TileColumn column in mColumns)
@@ -196,7 +196,18 @@ namespace Opdozitz
 
         private bool CanMoveColumn(int column)
         {
-            return !(mColumns[column].Locked || mColumns[column].Moving);
+            if (mColumns[column].Locked || mColumns[column].Moving)
+            {
+                return false;
+            }
+            foreach (Zit zit in mZits)
+            {
+                if (zit.IsAlive&& zit.CurrentColumn == mColumns[column])
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private bool IsKeyPress(KeyboardState keyboardState, Keys key)
