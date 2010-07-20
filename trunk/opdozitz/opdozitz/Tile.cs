@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Net;
 using Microsoft.Xna.Framework.Storage;
+using Opdozitz.Geom;
 
 namespace Opdozitz
 {
@@ -47,6 +48,22 @@ namespace Opdozitz
             return Enum.GetValues(typeof(TileParts));
         }
 
+        private IEnumerable<TileParts> PartsList()
+        {
+            foreach (TileParts part in AllParts())
+            {
+                if (HasPart(part))
+                {
+                    yield return part;
+                }
+            }
+        }
+
+        private bool HasPart(TileParts part)
+        {
+            return (Parts & part) != 0;
+        }
+
         public Tile(TileParts parts, int left, int top)
         {
             mParts = parts;
@@ -78,67 +95,37 @@ namespace Opdozitz
             get { return mLeft + GameMain.TileSize; }
         }
 
-        public int? LeftFloorHeight
+        public IEnumerable<Geom.LineSegment> Platforms(bool floor)
         {
-            get
+            if (floor && HasPart(TileParts.Bottom))
             {
-                if ((mParts & (TileParts.Bottom | TileParts.SlantUp)) != 0)
-                {
-                    return Bottom - GameMain.GirderWidth;
-                }
-                else if ((mParts & TileParts.SlantDown) != 0)
-                {
-                    return Top - GameMain.GirderWidth;
-                }
-                return null;
+                yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
             }
-        }
-
-        public int? RightFloorHeight
-        {
-            get
+            if(!floor && HasPart(TileParts.Top))
             {
-                if ((mParts & (TileParts.Bottom | TileParts.SlantDown)) != 0)
-                {
-                    return Bottom - GameMain.GirderWidth;
-                }
-                else if ((mParts & TileParts.SlantUp) != 0)
-                {
-                    return Top - GameMain.GirderWidth;
-                }
-                return null;
+                yield return new LineSegment(Left, Top + GameMain.GirderWidth, Right, Top + GameMain.GirderWidth);
             }
-        }
-
-        public int? LeftCeilingHeight
-        {
-            get
+            if (HasPart(TileParts.SlantUp))
             {
-                if ((mParts & (TileParts.Top | TileParts.SlantDown)) != 0)
+                if (floor)
                 {
-                    return Top + GameMain.GirderWidth;
+                    yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Top - GameMain.GirderWidth);
                 }
-                if ((mParts & TileParts.SlantUp) != 0)
+                else
                 {
-                    return Bottom + GameMain.GirderWidth;
+                    yield return new LineSegment(Left, Bottom + GameMain.GirderWidth, Right, Top + GameMain.GirderWidth);
                 }
-                return null;
             }
-        }
-
-        public int? RightCeilingHeight
-        {
-            get
+            if (HasPart(TileParts.SlantDown))
             {
-                if ((mParts & (TileParts.Top | TileParts.SlantUp)) != 0)
+                if (floor)
                 {
-                    return Top + GameMain.GirderWidth;
+                    yield return new LineSegment(Left, Top - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
                 }
-                if ((mParts & TileParts.SlantDown) != 0)
+                else
                 {
-                    return Bottom + GameMain.GirderWidth;
+                    yield return new LineSegment(Left, Top + GameMain.GirderWidth, Right, Bottom + GameMain.GirderWidth);
                 }
-                return null;
             }
         }
 
@@ -154,13 +141,19 @@ namespace Opdozitz
 
         internal void Draw(SpriteBatch batch)
         {
-            foreach (TileParts part in AllParts())
+            foreach (TileParts part in PartsList())
             {
-                if ((Parts & part) != 0)
-                {
-                    batch.Draw(sTileImages[part], new Rectangle(mLeft - GameMain.TileDrawOffset, mTop - GameMain.TileDrawOffset, GameMain.TileDrawSize, GameMain.TileDrawSize), Color.White);
-                }
+                Rectangle drawBounds = new Rectangle(
+                    mLeft - GameMain.TileDrawOffset, mTop - GameMain.TileDrawOffset,
+                    GameMain.TileDrawSize, GameMain.TileDrawSize
+                );
+                batch.Draw(sTileImages[part], drawBounds, Color.White);
             }
+        }
+
+        public override string ToString()
+        {
+            return "Location: " + Left.ToString() + ", " + Top.ToString() + " Parts: " + mParts.ToString();
         }
     }
 }
