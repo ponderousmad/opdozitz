@@ -53,11 +53,18 @@ namespace Opdozitz
         /// </summary>
         protected override void Initialize()
         {
-            Window.Title = "Opdozitz - Reddit Game Jam 02";
+            Window.Title = "Opdozitz";
+
+            RunTests();
 
             base.Initialize();
 
             LoadLevel(1);
+        }
+
+        private static void RunTests()
+        {
+            Geom.Line.TestIntersect.Test();
         }
 
         /// <summary>
