@@ -60,9 +60,86 @@ namespace Opdozitz
             set { mTop = value; }
         }
 
+        public int Bottom
+        {
+            get
+            {
+                return Top + GameMain.TileSize;
+            }
+        }
+
         public int Left
         {
             get { return mLeft; }
+        }
+
+        public int Right
+        {
+            get { return mLeft + GameMain.TileSize; }
+        }
+
+        public int? LeftFloorHeight
+        {
+            get
+            {
+                if ((mParts & (TileParts.Bottom | TileParts.SlantUp)) != 0)
+                {
+                    return Bottom - GameMain.GirderWidth;
+                }
+                else if ((mParts & TileParts.SlantDown) != 0)
+                {
+                    return Top - GameMain.GirderWidth;
+                }
+                return null;
+            }
+        }
+
+        public int? RightFloorHeight
+        {
+            get
+            {
+                if ((mParts & (TileParts.Bottom | TileParts.SlantDown)) != 0)
+                {
+                    return Bottom - GameMain.GirderWidth;
+                }
+                else if ((mParts & TileParts.SlantUp) != 0)
+                {
+                    return Top - GameMain.GirderWidth;
+                }
+                return null;
+            }
+        }
+
+        public int? LeftCeilingHeight
+        {
+            get
+            {
+                if ((mParts & (TileParts.Top | TileParts.SlantDown)) != 0)
+                {
+                    return Top + GameMain.GirderWidth;
+                }
+                if ((mParts & TileParts.SlantUp) != 0)
+                {
+                    return Bottom + GameMain.GirderWidth;
+                }
+                return null;
+            }
+        }
+
+        public int? RightCeilingHeight
+        {
+            get
+            {
+                if ((mParts & (TileParts.Top | TileParts.SlantUp)) != 0)
+                {
+                    return Top + GameMain.GirderWidth;
+                }
+                if ((mParts & TileParts.SlantDown) != 0)
+                {
+                    return Bottom + GameMain.GirderWidth;
+                }
+                return null;
+            }
         }
 
         public Tile Clone(int newTop)

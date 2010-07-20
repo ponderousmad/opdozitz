@@ -19,7 +19,9 @@ namespace Opdozitz
         Floor,
         Ceiling,
         Transition,
-        Dead
+        Dead,
+        Falling,
+        Home
     }
 
     class Zit
@@ -33,6 +35,7 @@ namespace Opdozitz
         private TileColumn mCurrentColumn = null;
 
         private const int kSize = 20;
+        private const int kRadius = kSize / 2;
         private const float kAngleIncrement = (float)(kSpeedFactor / kSize * Math.PI);
         private const float kSpeedFactor = kSize / 1000f;
 
@@ -41,28 +44,89 @@ namespace Opdozitz
             sSprite = content.Load<Texture2D>("Images/Zit");
         }
 
-        internal void Update(GameTime gameTime)
+        internal Zit(TileColumn column, Tile tile)
         {
+            mCurrentColumn = column;
+            mCurrentTile = tile;
+        }
 
+        internal void Update(GameTime gameTime, IList<TileColumn> columns)
+        {
             mAngle += gameTime.ElapsedGameTime.Milliseconds * kAngleIncrement;
-            mLocation.X += gameTime.ElapsedGameTime.Milliseconds * mSpeed * ((mState == ZitState.Floor) ? 1 : -1);
+            if (mState == ZitState.Floor || mState == ZitState.Ceiling)
+            {
+                int columnIndex = columns.IndexOf(mCurrentColumn);
+                mLocation.X += gameTime.ElapsedGameTime.Milliseconds * mSpeed * ((mState == ZitState.Floor) ? 1 : -1);
+
+                if (mState == ZitState.Floor)
+                {
+                    if (mLocation.X > mCurrentTile.Right)
+                    {
+                        ++columnIndex;
+                        if (columns[columnIndex].Moving)
+                        {
+                            Die();
+                        }
+                        else
+                        {
+                            TileColumn targetColumn = columns[columnIndex];
+                            int targetTileIndex = mCurrentColumn.IndexOf(mCurrentTile);
+
+                            while (targetTileIndex + 1 < targetColumn.Length && targetColumn[targetTileIndex].LeftFloorHeight == null)
+                            {
+                                ++targetTileIndex;
+                            }
+                            if (targetColumn[targetTileIndex].LeftFloorHeight == null || mCurrentTile.RightFloorHeight.Value > targetColumn[targetTileIndex].LeftFloorHeight.Value)
+                            {
+                                Fall();
+                            }
+
+                            mCurrentColumn = targetColumn;
+                            mCurrentTile = targetColumn[targetTileIndex];;
+                        }
+                    }
+                }
+                else
+                {
+                    if (mLocation.X < mCurrentTile.Left)
+                    {
+
+                    }
+                }
+            }
+        }
+
+        private void Fall()
+        {
+            mState = ZitState.Falling;
+        }
+
+        private void Die()
+        {
+            mState = ZitState.Dead;
         }
 
         public void Draw(SpriteBatch batch)
         {
-            batch.Draw(sSprite, mLocation, null, Color.White, mAngle, new Vector2(sSprite.Width / 2, sSprite.Height / 2), kSize / (float)sSprite.Width, SpriteEffects.None, 0);
+            if (IsAlive)
+            {
+                batch.Draw(sSprite, mLocation, null, Color.White, mAngle, new Vector2(sSprite.Width / 2, sSprite.Height / 2), kSize / (float)sSprite.Width, SpriteEffects.None, 0);
+            }
+        }
+
+        public bool IsAlive
+        {
+            get { return mState != ZitState.Dead && mState != ZitState.Dead && mState != ZitState.Falling; }
         }
 
         public Tile CurrentTile
         {
             get { return mCurrentTile; }
-            set { mCurrentTile = value; }
         }
 
         public TileColumn CurrentColumn
         {
             get { return mCurrentColumn; }
-            set { mCurrentColumn = value; }
         }
     }
 }

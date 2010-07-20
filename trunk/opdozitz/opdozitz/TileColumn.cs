@@ -46,6 +46,21 @@ namespace Opdozitz
             }
         }
 
+        internal int IndexOf(Tile tile)
+        {
+            return mTiles.IndexOf(tile);
+        }
+
+        internal Tile this[int index]
+        {
+            get { return mTiles[index]; }
+        }
+
+        internal int Length
+        {
+            get { return mTiles.Count; }
+        }
+
         internal int Top
         {
             get { return mTop; }
