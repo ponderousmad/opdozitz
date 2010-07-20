@@ -56,6 +56,11 @@ namespace Opdozitz
             get { return mTiles[index]; }
         }
 
+        internal IEnumerable<Tile> Tiles
+        {
+            get { return mTiles; }
+        }
+
         internal int Length
         {
             get { return mTiles.Count; }

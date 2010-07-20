@@ -47,21 +47,31 @@ namespace Opdozitz.Geom
             return true;
         }
 
-        public static bool SegmentsPPIntersects(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2)
+        public static bool SegmentPPIntersects(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2)
         {
-            return SegmentsPDIntersects(start1, end1 - start1, start2, end2 - start2);
+            return SegmentPDIntersects(start1, end1 - start1, start2, end2 - start2);
         }
 
-        public static bool SegmentsPDIntersects(Vector2 start1, Vector2 d1, Vector2 start2, Vector2 d2)
+        public static bool SegmentPPIntersects(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2, float tolerance)
+        {
+            return SegmentPDIntersects(start1, end1 - start1, start2, end2 - start2, tolerance);
+        }
+
+        public static bool SegmentPDIntersects(Vector2 start1, Vector2 d1, Vector2 start2, Vector2 d2)
+        {
+            return SegmentPDIntersects(start1, d1, start2, d2, kColinearTolerance);
+        }
+
+        public static bool SegmentPDIntersects(Vector2 start1, Vector2 d1, Vector2 start2, Vector2 d2, float tolerance)
         {
             Vector2 between = start1 - start2;
 
             float denom = Determinant(d1, d2);
 
-            if (denom == 0)
+            if (TolEqual(denom, 0, tolerance))
             {
                 // Lines are parallel, can't intersect, but may overlap.
-                if (!CheckAligned(d1, between, kColinearTolerance))
+                if (!CheckAligned(d1, between, tolerance))
                 {
                     return false;
                 }
@@ -72,6 +82,62 @@ namespace Opdozitz.Geom
 
             return InSegment(Determinant(d1, between) / denom) &&
                    InSegment(Determinant(d2, between) / denom);
+        }
+
+        public static bool IntersectSegmentPP(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2, out Vector2 intersection)
+        {
+            return IntersectSegmentPD(start1, end1 - start1, start2, end2 - start2, out intersection);
+        }
+
+        public static bool IntersectSegmentPP(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2, float tolerance, out Vector2 intersection)
+        {
+            return IntersectSegmentPD(start1, end1 - start1, start2, end2 - start2, tolerance, out intersection);
+        }
+
+
+        public static bool IntersectSegmentPD(Vector2 start1, Vector2 d1, Vector2 start2, Vector2 d2, out Vector2 intersection)
+        {
+            return IntersectSegmentPD(start1, d1, start2, d2, kColinearTolerance, out intersection);
+        }
+
+        public static bool IntersectSegmentPD(Vector2 start1, Vector2 d1, Vector2 start2, Vector2 d2, float tolerance, out Vector2 intersection)
+        {
+            Vector2 between = start1 - start2;
+
+            float denom = Determinant(d1, d2);
+            if (TolEqual(denom, 0, tolerance))
+            {
+                // Lines are parallel, can't intersect, but may overlap.
+                if (!CheckAligned(d1, between, tolerance))
+                {
+                    intersection = start1;
+                    return false;
+                }
+
+                // There is overlap if the start or end of segment 2 is in segment 1, or if segment 2 contains all of segment 1.
+                if (InSegmentPD(start1, d1, start2))
+                {
+                    intersection = start2;
+                    return true;
+                }
+                if (InSegmentPD(start1, d1, start2 + d2))
+                {
+                    intersection = start2 + d2;
+                    return true;
+                }
+
+                intersection = start1;
+                if (InSegmentPD(start2, d2, start1))
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            float t1 = Determinant(d2, between) / denom;
+            float t2 = Determinant(d1, between) / denom;
+            intersection = start1 + d1 * (float)t1;
+            return InSegment(t1) && InSegment(t2);
         }
 
         private static bool InSegment(float parameter)
