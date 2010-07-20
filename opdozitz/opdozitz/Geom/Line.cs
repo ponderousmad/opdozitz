@@ -201,6 +201,13 @@ namespace Opdozitz.Geom
             return v1X * v2Y - v1Y * v2X;
         }
 
+        public static double Angle(Vector2 v1, Vector2 v2)
+        {
+            v1.Normalize();
+            v2.Normalize();
+            return Math.Acos(Vector2.Dot(v1,v2));
+        }
+
         internal class TestIntersect
         {
             [Conditional("DEBUG")]

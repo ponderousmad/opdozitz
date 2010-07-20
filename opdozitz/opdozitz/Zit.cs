@@ -41,6 +41,7 @@ namespace Opdozitz
         private const float kAngleIncrement = (float)(kSpeedFactor / kSize * Math.PI);
         private const float kSpeedFactor = kSize / 1000f;
         private const float kRailIntersectionTolerance = 1e-2f;
+        private const double kQuarterCircle = Math.PI / 2;
 
         public static void LoadContent(ContentManager content)
         {
@@ -52,7 +53,7 @@ namespace Opdozitz
             mCurrentColumn = column;
             mCurrentTile = tile;
             LineSegment platform = tile.Platforms(true).First();
-            mRail = platform.Shift(platform.Normal * (-kRadius));
+            mRail = platform.Shift(PlatformOffset(platform, true));
             mLocation = mRail.Start + mRail.Direction * kRadius;
             mRailTraveled = kRadius;
         }
@@ -78,15 +79,10 @@ namespace Opdozitz
                     Tile tile = targetColumn[i];
                     foreach (LineSegment platform in tile.Platforms(isFloor))
                     {
-                        Vector2 normal = platform.Normal;
-                        if (Geom.Line.Determinant(normal, Vector2.UnitY) > 0)
-                        {
-                            normal *= -1;
-                        }
-                        LineSegment next = platform.ExtendAtStart(kRadius).Shift(normal * (-kRadius));
+                        LineSegment next = platform.ExtendAtStart(kRadius).Shift(PlatformOffset(platform, isFloor));
 
                         Vector2 intersection;
-                        if(currentPath.FindIntersection(next, kRailIntersectionTolerance, out intersection))
+                        if (currentPath.FindIntersection(next, kRailIntersectionTolerance, out intersection))
                         {
                             targetTile = tile;
                             targetRail = new LineSegment(intersection, next.End);
@@ -117,6 +113,16 @@ namespace Opdozitz
                 mRailTraveled += distance;
                 mLocation += rail.Direction * distance;
             }
+        }
+
+        private static Vector2 PlatformOffset(LineSegment platform, bool isFloor)
+        {
+            Vector2 normal = platform.Normal;
+            if (Geom.Line.Angle(normal, isFloor ? Vector2.UnitY : -Vector2.UnitY) > kQuarterCircle)
+            {
+                return normal * kRadius;
+            }
+            return normal * (-kRadius);
         }
 
         private bool IsRolling()
