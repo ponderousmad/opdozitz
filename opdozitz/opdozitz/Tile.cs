@@ -19,12 +19,11 @@ namespace Opdozitz
     enum TileParts
     {
         Empty = 0,
-        Top = 1,
-        Bottom = 2,
-        SlantUp = 4,
-        SlantDown = 8,
-        //        SpikesUp = 16,
-        //        SpikesDown = 32
+        Flat = 1,
+        SlantUp = 2,
+        SlantDown = 4,
+        //        SpikesUp = 8,
+        //        SpikesDown = 16
     }
 
     class Tile
@@ -95,35 +94,23 @@ namespace Opdozitz
             get { return mLeft + GameMain.TileSize; }
         }
 
-        public IEnumerable<Geom.LineSegment> Platforms(bool floor)
+        public IEnumerable<Geom.LineSegment> Platforms
         {
-            if (floor && HasPart(TileParts.Bottom))
+            get
             {
-                yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
-            }
-            if(!floor && HasPart(TileParts.Top))
-            {
-                yield return new LineSegment(Left, Top + GameMain.GirderWidth, Right, Top + GameMain.GirderWidth);
-            }
-            if (HasPart(TileParts.SlantUp))
-            {
-                if (floor)
+                if (HasPart(TileParts.Flat))
+                {
+                    yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
+                    yield return new LineSegment(Left, Bottom + GameMain.GirderWidth, Right, Bottom + GameMain.GirderWidth);
+                }
+                if (HasPart(TileParts.SlantUp))
                 {
                     yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Top - GameMain.GirderWidth);
-                }
-                else
-                {
                     yield return new LineSegment(Left, Bottom + GameMain.GirderWidth, Right, Top + GameMain.GirderWidth);
                 }
-            }
-            if (HasPart(TileParts.SlantDown))
-            {
-                if (floor)
+                if (HasPart(TileParts.SlantDown))
                 {
                     yield return new LineSegment(Left, Top - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
-                }
-                else
-                {
                     yield return new LineSegment(Left, Top + GameMain.GirderWidth, Right, Bottom + GameMain.GirderWidth);
                 }
             }
