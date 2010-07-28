@@ -202,8 +202,8 @@
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="TransitionTop" />
+    <Tile type="Flat, TransitionBottom" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />

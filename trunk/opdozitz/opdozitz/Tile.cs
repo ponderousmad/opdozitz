@@ -22,8 +22,8 @@ namespace Opdozitz
         Flat = 1,
         SlantUp = 2,
         SlantDown = 4,
-        //        SpikesUp = 8,
-        //        SpikesDown = 16
+        TransitionTop = 8,
+        TransitionBottom = 16
     }
 
     class Tile
