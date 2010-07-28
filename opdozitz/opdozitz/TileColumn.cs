@@ -76,6 +76,11 @@ namespace Opdozitz
             get { return mLeft; }
         }
 
+        internal int Right
+        {
+            get { return Left + GameMain.TileSize; }
+        }
+
         internal bool Locked
         {
             get { return mLocked; }
@@ -84,6 +89,11 @@ namespace Opdozitz
         internal bool Moving
         {
             get { return mMovingSteps > 0; }
+        }
+
+        internal bool InColumn(float x)
+        {
+            return Left <= x && x <= Right;
         }
 
         internal void MoveUp()

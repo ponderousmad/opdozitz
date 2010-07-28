@@ -42,6 +42,16 @@ namespace Opdozitz.Geom
             }
         }
 
+        public Vector2 DirectedNormal
+        {
+            get
+            {
+                Vector2 dir = Direction;
+                Vector2 normal = new Vector2(-dir.Y, dir.X);
+                return (Line.Determinant(dir, normal) < 0) ? normal : -normal;
+            }
+        }
+
         public float Length
         {
             get { return Vector2.Distance(Start, End); }
@@ -90,6 +100,27 @@ namespace Opdozitz.Geom
         public override string ToString()
         {
             return "Start: " + Start.ToString() + ", End: " + End.ToString();
+        }
+
+        internal Vector2 ClosestPoint(Vector2 center, out bool atEnd)
+        {
+            Vector2 closest;
+            Vector2 normal = Normal;
+            if (!Line.IntersectPD(Start, Direction, center, Normal, out closest))
+            {
+                // Degenerate line segment.
+                atEnd = true;
+                return Start;
+            }
+            // Is the closest point inside the line segment?
+            Vector2 direction = Direction;
+            if (Vector2.Dot(closest - Start, direction) >= 0 && Vector2.Dot(closest - End, -direction) >= 0)
+            {
+                atEnd = false;
+                return closest;
+            }
+            atEnd = true;
+            return Vector2.DistanceSquared(center, Start) < Vector2.DistanceSquared(center, End) ? Start : End;
         }
     }
 }

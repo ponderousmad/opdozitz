@@ -122,8 +122,13 @@ namespace Opdozitz
                     }
                     columnLocation += TileSize;
                 }
-                mZits.Add(new Zit(mColumns[0],mColumns[0][1]));
+                SpawnZit();
             }
+        }
+
+        private void SpawnZit()
+        {
+            mZits.Add(new Zit(mColumns[0][1]));
         }
 
         /// <summary>
@@ -186,6 +191,11 @@ namespace Opdozitz
                 }
             }
 
+            if (IsKeyPress(keyboardState, Keys.Escape))
+            {
+                mZits.Clear();
+                SpawnZit();
+            }
 
             foreach (Zit zit in mZits)
             {
@@ -209,7 +219,7 @@ namespace Opdozitz
             }
             foreach (Zit zit in mZits)
             {
-                if (zit.IsAlive&& zit.CurrentColumn == mColumns[column])
+                if (zit.IsAlive&& zit.InColumn(mColumns[column]))
                 {
                     return false;
                 }
