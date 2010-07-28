@@ -17,9 +17,7 @@ namespace Opdozitz
 {
     enum ZitState
     {
-        Floor,
-        Ceiling,
-        Transition,
+        Rolling,
         Dead,
         Falling,
         Home
@@ -29,18 +27,13 @@ namespace Opdozitz
     {
         private static Texture2D sSprite = null;
         private Vector2 mLocation;
+        private Vector2 mContact;
         private float mAngle = 0;
-        private LineSegment mRail;
-        private float mRailTraveled;
-        private ZitState mState = ZitState.Floor;
-        private Tile mCurrentTile = null;
-        private TileColumn mCurrentColumn = null;
+        private ZitState mState = ZitState.Rolling;
 
         private const int kSize = 20;
         private const float kRadius = kSize / 2f;
-        private const float kAngleIncrement = (float)(kSpeedFactor / kSize * Math.PI);
-        private const float kSpeedFactor = kSize / 1000f;
-        private const float kRailIntersectionTolerance = 1e-2f;
+        private const float kAngleIncrement = 0.004f;
         private const double kQuarterCircle = Math.PI / 2;
 
         public static void LoadContent(ContentManager content)
@@ -48,14 +41,11 @@ namespace Opdozitz
             sSprite = content.Load<Texture2D>("Images/Zit");
         }
 
-        internal Zit(TileColumn column, Tile tile)
+        internal Zit(Tile tile)
         {
-            mCurrentColumn = column;
-            mCurrentTile = tile;
-            LineSegment platform = tile.Platforms(true).First();
-            mRail = platform.Shift(PlatformOffset(platform, true));
-            mLocation = mRail.Start + mRail.Direction * kRadius;
-            mRailTraveled = kRadius;
+            LineSegment platform = tile.Platforms.First();
+            mContact = platform.Start + platform.Direction * kRadius;
+            mLocation = mContact + platform.DirectedNormal * kRadius;
         }
 
         internal void Update(GameTime gameTime, IList<TileColumn> columns)
@@ -63,74 +53,73 @@ namespace Opdozitz
             mAngle += gameTime.ElapsedGameTime.Milliseconds * kAngleIncrement;
             if (IsRolling())
             {
-                LineSegment rail = mRail;
-                float distance = gameTime.ElapsedGameTime.Milliseconds * kSpeedFactor;
+                float rotation = gameTime.ElapsedGameTime.Milliseconds * kAngleIncrement;
 
-                bool isFloor = mState == ZitState.Floor;
-                int nextColumn = columns.IndexOf(mCurrentColumn) + (isFloor ? 1 : -1);
+                Vector2 support = mLocation - mContact;
+                double supportAngle = Math.Atan2(support.Y, support.X);
+                double newAngle = supportAngle + rotation;
 
-                TileColumn targetColumn = columns[nextColumn];
-                Tile targetTile = null;
-                LineSegment targetRail = null;
+                Vector2 swungLocation = mContact + kRadius * new Vector2((float)Math.Cos(newAngle), (float)Math.Sin(newAngle));
 
-                if (!targetColumn.Moving)
+                float left = Math.Min(mLocation.X, swungLocation.X) - kRadius;
+                float right = Math.Max(mLocation.X, swungLocation.X) + kRadius;
+
+                LineSegment closestPlatform = null;
+                Vector2 newContact = mContact;
+                bool closestAtEnd = false;
+                float minDistanceSquared = float.MaxValue;
+                foreach (TileColumn column in columns)
                 {
-                    LineSegment currentPath = rail.ExtendAtEnd(kSize);
-                    for (int i = 0; i < targetColumn.Length && targetRail == null; ++i)
+                    if (column.InColumn(left) || column.InColumn(right))
                     {
-                        Tile tile = targetColumn[i];
-                        foreach (LineSegment platform in tile.Platforms(isFloor))
+                        foreach (Tile tile in column.Tiles)
                         {
-                            LineSegment next = platform.ExtendAtStart(kRadius).Shift(PlatformOffset(platform, isFloor));
-
-                            Vector2 intersection;
-                            if (currentPath.FindIntersection(next, kRailIntersectionTolerance, out intersection))
+                            foreach (LineSegment platform in tile.Platforms)
                             {
-                                targetTile = tile;
-                                targetRail = new LineSegment(intersection, next.End);
-                                rail = new LineSegment(rail.Start, intersection);
-                                break;
+                                bool atEnd;
+                                Vector2 currentClosest = platform.ClosestPoint(swungLocation, out atEnd);
+                                float distanceSquared = Vector2.DistanceSquared(currentClosest, swungLocation);
+                                if (distanceSquared < minDistanceSquared)
+                                {
+                                    closestAtEnd = atEnd;
+                                    closestPlatform = platform;
+                                    minDistanceSquared = distanceSquared;
+                                    newContact = currentClosest;
+                                }
                             }
                         }
                     }
                 }
 
-                if (mRailTraveled + distance > rail.Length)
+                if (closestPlatform != null)
                 {
-                    mLocation = rail.End;
-                    distance -= (rail.Length - mRailTraveled);
-                    mRailTraveled = 0;
-
-                    if (targetRail == null)
+                    mContact = newContact;
+                    if (closestAtEnd)
                     {
-                        Fall();
+                        Vector2 normal = swungLocation - mContact;
+                        normal.Normalize();
+                        mLocation = mContact + normal * kRadius;
                     }
                     else
                     {
-                        mRail = rail = targetRail;
-                        mCurrentColumn = targetColumn;
-                        mCurrentTile = targetTile;
+                        mLocation = mContact + closestPlatform.DirectedNormal * kRadius;
                     }
                 }
-
-                mRailTraveled += distance;
-                mLocation += rail.Direction * distance;
+                else
+                {
+                    mLocation = swungLocation;
+                }
             }
         }
 
-        private static Vector2 PlatformOffset(LineSegment platform, bool isFloor)
+        private static bool InColumn(TileColumn column, float x)
         {
-            Vector2 normal = platform.Normal;
-            if (Geom.Line.Angle(normal, isFloor ? Vector2.UnitY : -Vector2.UnitY) > kQuarterCircle)
-            {
-                return normal * kRadius;
-            }
-            return normal * (-kRadius);
+            return (column.Left <= x && x <= column.Right);
         }
 
         private bool IsRolling()
         {
-            return mState == ZitState.Floor || mState == ZitState.Ceiling;
+            return mState == ZitState.Rolling;
         }
 
         private void Fall()
@@ -153,17 +142,12 @@ namespace Opdozitz
 
         public bool IsAlive
         {
-            get { return mState != ZitState.Dead && mState != ZitState.Dead && mState != ZitState.Falling; }
+            get { return mState == ZitState.Rolling || mState == ZitState.Falling; }
         }
 
-        public Tile CurrentTile
+        internal bool InColumn(TileColumn column)
         {
-            get { return mCurrentTile; }
-        }
-
-        public TileColumn CurrentColumn
-        {
-            get { return mCurrentColumn; }
+            return column.InColumn(mLocation.X - kRadius) || column.InColumn(mLocation.X + kRadius);
         }
     }
 }

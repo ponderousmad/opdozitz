@@ -145,7 +145,7 @@ namespace Opdozitz.Geom
             return (0 <= parameter && parameter <= 1);
         }
 
-        public static bool InSegmentPD(Vector2 start, Vector2 direction, Vector2 point)
+        private static bool InSegmentPD(Vector2 start, Vector2 direction, Vector2 point)
         {
             Vector2 diff = point - start;
             if (diff.X != 0)
