@@ -86,7 +86,6 @@
   <ItemGroup>
     <Compile Include="Geom\Line.cs" />
     <Compile Include="Geom\LineSegment.cs" />
-    <Compile Include="Surface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="GameMain.cs" />
