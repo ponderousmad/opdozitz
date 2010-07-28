@@ -73,21 +73,24 @@ namespace Opdozitz
                 Tile targetTile = null;
                 LineSegment targetRail = null;
 
-                LineSegment currentPath = rail.ExtendAtEnd(kSize);
-                for (int i = 0; i < targetColumn.Length && targetRail == null; ++i)
+                if (!targetColumn.Moving)
                 {
-                    Tile tile = targetColumn[i];
-                    foreach (LineSegment platform in tile.Platforms(isFloor))
+                    LineSegment currentPath = rail.ExtendAtEnd(kSize);
+                    for (int i = 0; i < targetColumn.Length && targetRail == null; ++i)
                     {
-                        LineSegment next = platform.ExtendAtStart(kRadius).Shift(PlatformOffset(platform, isFloor));
-
-                        Vector2 intersection;
-                        if (currentPath.FindIntersection(next, kRailIntersectionTolerance, out intersection))
+                        Tile tile = targetColumn[i];
+                        foreach (LineSegment platform in tile.Platforms(isFloor))
                         {
-                            targetTile = tile;
-                            targetRail = new LineSegment(intersection, next.End);
-                            rail = new LineSegment(rail.Start, intersection);
-                            break;
+                            LineSegment next = platform.ExtendAtStart(kRadius).Shift(PlatformOffset(platform, isFloor));
+
+                            Vector2 intersection;
+                            if (currentPath.FindIntersection(next, kRailIntersectionTolerance, out intersection))
+                            {
+                                targetTile = tile;
+                                targetRail = new LineSegment(intersection, next.End);
+                                rail = new LineSegment(rail.Start, intersection);
+                                break;
+                            }
                         }
                     }
                 }
