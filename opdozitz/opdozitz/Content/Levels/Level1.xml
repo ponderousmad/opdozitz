@@ -4,7 +4,7 @@
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Empty" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
@@ -18,12 +18,12 @@
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
+    <Tile type="Empty" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
@@ -46,18 +46,31 @@
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
+    <Tile type="TransitionTop" />
+    <Tile type="Flat, TransitionBottom" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
     <Tile type="Flat" />
     <Tile type="Flat" />
   </Column>
   <Column>
     <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+  </Column>
+  <Column>
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
@@ -66,7 +79,8 @@
     <Tile type="SlantDown" />
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
     <Tile type="Flat" />
     <Tile type="Flat" />
   </Column>
@@ -76,21 +90,7 @@
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Empty" />
-    <Tile type="SlantDown" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="SlantUp" />
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="Flat" />
@@ -101,36 +101,8 @@
   <Column>
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="SlantDown" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="SlantDown" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="TransitionTop" />
+    <Tile type="Flat, TransitionBottom" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Empty" />
@@ -146,10 +118,38 @@
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+  </Column>
+  <Column>
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+  </Column>
+  <Column>
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
@@ -160,24 +160,10 @@
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
@@ -185,15 +171,29 @@
   <Column>
     <Tile type="Flat" />
     <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
     <Tile type="Flat" />
     <Tile type="Flat" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
     <Tile type="Flat" />
+    <Tile type="Empty" />
     <Tile type="Flat" />
+    <Tile type="Empty" />
     <Tile type="Flat" />
+    <Tile type="Empty" />
     <Tile type="Flat" />
+    <Tile type="Empty" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Empty" />
     <Tile type="Flat" />
   </Column>
   <Column locked="true">
