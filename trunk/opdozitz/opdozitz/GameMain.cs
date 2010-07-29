@@ -165,14 +165,14 @@ namespace Opdozitz
 
             KeyboardState keyboardState = Keyboard.GetState();
 
-            if (IsKeyPress(keyboardState, Keys.Up))
+            if (keyboardState.IsKeyDown(Keys.Up))
             {
                 if (CanMoveColumn(mSelectedColumn))
                 {
                     mColumns[mSelectedColumn].MoveUp();
                 }
             }
-            else if (IsKeyPress(keyboardState, Keys.Down))
+            else if (keyboardState.IsKeyDown(Keys.Down))
             {
                 if (CanMoveColumn(mSelectedColumn))
                 {
