@@ -33,6 +33,12 @@ namespace Opdozitz
 
         private static Dictionary<TileParts, Texture2D> sTileImages;
 
+        private const float kTransitionSlopeFraction = 0.4f;
+        private const float kTransitionSlopeGrade = 0.5f;
+        private const float kTransitionSlopeRun = GameMain.TileSize * kTransitionSlopeFraction;
+        private const float kTransitionSlopeRise = kTransitionSlopeRun * kTransitionSlopeGrade;
+        private const int kTransitionArcSteps = 2;
+
         internal static void LoadContent(ContentManager content)
         {
             sTileImages = new Dictionary<TileParts, Texture2D>();
@@ -111,8 +117,45 @@ namespace Opdozitz
                 if (HasPart(TileParts.SlantDown))
                 {
                     yield return new LineSegment(Left, Top - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
-                    yield return new LineSegment(Bottom + GameMain.GirderWidth, Left, Top + GameMain.GirderWidth, Right);
+                    yield return new LineSegment(Right, Bottom + GameMain.GirderWidth, Left, Top + GameMain.GirderWidth);
                 }
+                if (HasPart(TileParts.TransitionTop))
+                {
+                    Vector2 platformEnd = new Vector2(Left + kTransitionSlopeRun, Bottom - GameMain.GirderWidth - kTransitionSlopeRise);
+                    yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, platformEnd.X, platformEnd.Y);
+                    Vector2 center = new Vector2(Left + kTransitionSlopeRun, Bottom);
+                    foreach (Geom.LineSegment segment in ArcSegments(center, platformEnd, Math.PI / 2, kTransitionArcSteps))
+                    {
+                        yield return segment;
+                    }
+                }
+                if (HasPart(TileParts.TransitionBottom))
+                {
+                    Vector2 center = new Vector2(Left + kTransitionSlopeRun, Top);
+                    float radius = GameMain.GirderWidth + kTransitionSlopeRise;
+                    Vector2 arcStart = new Vector2(Left + kTransitionSlopeRun + radius, Top);
+                    foreach (Geom.LineSegment segment in ArcSegments(center, arcStart, Math.PI / 2, kTransitionArcSteps))
+                    {
+                        yield return segment;
+                    }
+                    yield return new LineSegment(Left + kTransitionSlopeRun, Top + radius, Left, Top + GameMain.GirderWidth);
+                }
+            }
+        }
+
+        private IEnumerable<Geom.LineSegment> ArcSegments(Vector2 center, Vector2 startPoint, double segmentAngle, int steps)
+        {
+            double angleStep = -segmentAngle / steps;
+            Vector2 startSpoke = startPoint - center;
+            double startAngle = Math.Atan2(-startSpoke.Y, startSpoke.X);
+            float radius = startSpoke.Length();
+
+            for (int i = 1; i <= steps; ++i)
+            {
+                double angle = startAngle + i * angleStep;
+                Vector2 platformEnd = center + radius * new Vector2((float)Math.Cos(angle), -(float)Math.Sin(angle));
+                yield return new LineSegment(startPoint, platformEnd);
+                startPoint = platformEnd;
             }
         }
 
@@ -135,6 +178,15 @@ namespace Opdozitz
                     GameMain.TileDrawSize, GameMain.TileDrawSize
                 );
                 batch.Draw(sTileImages[part], drawBounds, Color.White);
+            }
+        }
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        private void DrawDiagnostics(SpriteBatch batch)
+        {
+            foreach (LineSegment platform in Platforms)
+            {
+                batch.Draw(GameMain.Pixel, new Rectangle((int)(Math.Round(platform.Start.X)), (int)(Math.Round(platform.Start.Y)), 1, 1), Color.White);
             }
         }
 
