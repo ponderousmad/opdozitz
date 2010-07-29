@@ -26,6 +26,8 @@ namespace Opdozitz
         public const int TileDrawSize = TileSize + (TileDrawOffset * 2);
         public const int ColumnXOffset = 25;
         public const int ColumnVOffset = 0;
+        public const int FrameTop = 25;
+        public const int FrameBottom = 575;
 
         private static Texture2D sPixel;
 
