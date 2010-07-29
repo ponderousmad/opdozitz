@@ -37,6 +37,7 @@ namespace Opdozitz
         private const float kAngleIncrement = 0.004f;
         private const int kInColumnPad = 5;
         private const float kFallForce = 0.03f;
+        private const float kFatalVelocity = 9;
 
         public static void LoadContent(ContentManager content)
         {
@@ -75,25 +76,19 @@ namespace Opdozitz
                 Vector2 newContact = mContact;
                 bool closestAtEnd = false;
                 float minDistanceSquared = float.MaxValue;
-                foreach (TileColumn column in columns)
+                foreach (Tile tile in TilesInCurrentColumns(columns, left, right))
                 {
-                    if (column.InColumn(left) || column.InColumn(right))
+                    foreach (LineSegment platform in tile.Platforms)
                     {
-                        foreach (Tile tile in column.Tiles)
+                        bool atEnd;
+                        Vector2 currentClosest = platform.ClosestPoint(swungLocation, out atEnd);
+                        float distanceSquared = Vector2.DistanceSquared(currentClosest, swungLocation);
+                        if (distanceSquared < minDistanceSquared)
                         {
-                            foreach (LineSegment platform in tile.Platforms)
-                            {
-                                bool atEnd;
-                                Vector2 currentClosest = platform.ClosestPoint(swungLocation, out atEnd);
-                                float distanceSquared = Vector2.DistanceSquared(currentClosest, swungLocation);
-                                if (distanceSquared < minDistanceSquared)
-                                {
-                                    closestAtEnd = atEnd;
-                                    closestPlatform = platform;
-                                    minDistanceSquared = distanceSquared;
-                                    newContact = currentClosest;
-                                }
-                            }
+                            closestAtEnd = atEnd;
+                            closestPlatform = platform;
+                            minDistanceSquared = distanceSquared;
+                            newContact = currentClosest;
                         }
                     }
                 }
@@ -130,7 +125,56 @@ namespace Opdozitz
             {
                 mFallSpeed += elapsed * kFallForce;
 
-                mLocation.Y += mFallSpeed;
+                Vector2 fallLocation = new Vector2(mLocation.X, mLocation.Y + mFallSpeed);
+                LineSegment closestPlatform = null;
+                Vector2 newContact = Vector2.Zero;
+                if (mFallSpeed < kFatalVelocity)
+                {
+                    float highestIntersection = fallLocation.Y;
+                    foreach (Tile tile in TilesInCurrentColumns(columns, mLocation.X - kRadius, mLocation.X + kRadius))
+                    {
+                        foreach (LineSegment platform in tile.Platforms)
+                        {
+                            Vector2 offsetVector = -platform.DirectedNormal * kRadius;
+                            Vector2 offsetPoint = fallLocation + offsetVector;
+                            Vector2 contact;
+                            if (platform.FindIntersection(new LineSegment(offsetPoint.X, offsetPoint.Y, offsetPoint.X, offsetPoint.Y - kSize), out contact))
+                            {
+                                Vector2 landLocation = contact - offsetVector;
+                                if (mLocation.Y < landLocation.Y && landLocation.Y < highestIntersection)
+                                {
+                                    closestPlatform = platform;
+                                    newContact = contact;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (closestPlatform != null)
+                {
+                    mFallSpeed = 0;
+                    mContact = newContact;
+                    mLocation = mContact + kRadius * closestPlatform.DirectedNormal;
+                    mState = ZitState.Rolling;
+                }
+                else
+                {
+                    mLocation = fallLocation;
+                }
+            }
+        }
+
+        private IEnumerable<Tile> TilesInCurrentColumns(IEnumerable<TileColumn> columns, float left, float right)
+        {
+            foreach (TileColumn column in columns)
+            {
+                if (column.InColumn(left) || column.InColumn(right))
+                {
+                    foreach (Tile tile in column.Tiles)
+                    {
+                        yield return tile;
+                    }
+                }
             }
         }
 

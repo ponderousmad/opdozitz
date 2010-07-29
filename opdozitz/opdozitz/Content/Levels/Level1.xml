@@ -173,12 +173,12 @@
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="Flat" />
+    <Tile type="Flat" />
     <Tile type="Empty" />
+    <Tile type="SlantDown" />
     <Tile type="SlantUp" />
     <Tile type="Empty" />
-    <Tile type="SlantUp" />
-    <Tile type="Empty" />
-    <Tile type="SlantUp" />
+    <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
   </Column>
