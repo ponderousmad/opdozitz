@@ -27,6 +27,8 @@ namespace Opdozitz
         public const int ColumnXOffset = 25;
         public const int ColumnVOffset = 0;
 
+        private static Texture2D sPixel;
+
         private GraphicsDeviceManager mGraphics;
         private SpriteBatch mSpriteBatch;
         private List<Zit> mZits = new List<Zit>();
@@ -38,6 +40,11 @@ namespace Opdozitz
         private int mSelectedColumn = 1;
 
         private KeyboardState mLastKeyboardState = new KeyboardState();
+
+        public static Texture2D Pixel
+        {
+            get { return sPixel; }
+        }
 
         public GameMain()
         {
@@ -80,6 +87,11 @@ namespace Opdozitz
             mBackground = Content.Load<Texture2D>("Images/Background");
             mFrame = Content.Load<Texture2D>("Images/Frame");
             mSelectColumn = Content.Load<Texture2D>("Images/SelectColumn");
+
+            if (sPixel == null)
+            {
+                sPixel = Content.Load<Texture2D>("Images/Pixel");
+            }
         }
 
         private static string ContentBuildPath
@@ -170,7 +182,7 @@ namespace Opdozitz
 
             if (IsKeyPress(keyboardState, Keys.Left))
             {
-                for (int column = mSelectedColumn-1; column > 0; --column)
+                for (int column = mSelectedColumn - 1; column > 0; --column)
                 {
                     if (CanMoveColumn(column))
                     {
@@ -219,7 +231,7 @@ namespace Opdozitz
             }
             foreach (Zit zit in mZits)
             {
-                if (zit.IsAlive&& zit.InColumn(mColumns[column]))
+                if (zit.IsAlive && zit.InColumn(mColumns[column]))
                 {
                     return false;
                 }
