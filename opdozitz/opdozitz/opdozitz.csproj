@@ -84,6 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Flipbook.cs" />
     <Compile Include="Geom\Line.cs" />
     <Compile Include="Geom\LineSegment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

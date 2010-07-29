@@ -23,7 +23,8 @@ namespace Opdozitz
         SlantUp = 2,
         SlantDown = 4,
         TransitionTop = 8,
-        TransitionBottom = 16
+        TransitionBottom = 16,
+        Block = 32,
     }
 
     class Tile
@@ -139,6 +140,17 @@ namespace Opdozitz
                         yield return segment;
                     }
                     yield return new LineSegment(Left + kTransitionSlopeRun, Top + radius, Left, Top + GameMain.GirderWidth);
+                }
+            }
+        }
+
+        public IEnumerable<Rectangle> Hazards
+        {
+            get
+            {
+                if (HasPart(TileParts.Block))
+                {
+                    yield return new Rectangle(Left, Top, GameMain.TileSize, GameMain.TileSize);
                 }
             }
         }

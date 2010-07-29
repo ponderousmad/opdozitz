@@ -1,18 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Level>
   <Column locked="true">
+    <Tile type="Flat, Block" />
     <Tile type="Flat" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Flat, Block" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Block" />
   </Column>
   <Column>
     <Tile type="Flat" />
@@ -197,17 +197,17 @@
     <Tile type="Flat" />
   </Column>
   <Column locked="true">
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Flat, block" />
     <Tile type="TransitionTop" />
     <Tile type="Flat, TransitionBottom" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
+    <Tile type="Block" />
   </Column>
 </Level>
