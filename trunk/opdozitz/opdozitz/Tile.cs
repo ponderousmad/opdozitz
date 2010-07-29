@@ -101,17 +101,17 @@ namespace Opdozitz
                 if (HasPart(TileParts.Flat))
                 {
                     yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
-                    yield return new LineSegment(Left, Bottom + GameMain.GirderWidth, Right, Bottom + GameMain.GirderWidth);
+                    yield return new LineSegment(Right, Bottom + GameMain.GirderWidth, Left, Bottom + GameMain.GirderWidth);
                 }
                 if (HasPart(TileParts.SlantUp))
                 {
                     yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Top - GameMain.GirderWidth);
-                    yield return new LineSegment(Left, Bottom + GameMain.GirderWidth, Right, Top + GameMain.GirderWidth);
+                    yield return new LineSegment(Right, Top + GameMain.GirderWidth, Left, Bottom + GameMain.GirderWidth);
                 }
                 if (HasPart(TileParts.SlantDown))
                 {
                     yield return new LineSegment(Left, Top - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
-                    yield return new LineSegment(Left, Top + GameMain.GirderWidth, Right, Bottom + GameMain.GirderWidth);
+                    yield return new LineSegment(Bottom + GameMain.GirderWidth, Left, Top + GameMain.GirderWidth, Right);
                 }
             }
         }
