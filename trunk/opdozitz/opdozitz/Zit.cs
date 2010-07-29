@@ -30,11 +30,13 @@ namespace Opdozitz
         private Vector2 mContact;
         private float mAngle = 0;
         private ZitState mState = ZitState.Rolling;
+        private float mFallSpeed = 0;
 
         private const int kSize = 20;
         private const float kRadius = kSize / 2f;
         private const float kAngleIncrement = 0.004f;
-        private const double kQuarterCircle = Math.PI / 2;
+        private const int kInColumnPad = 5;
+        private const float kFallForce = 0.03f;
 
         public static void LoadContent(ContentManager content)
         {
@@ -50,11 +52,16 @@ namespace Opdozitz
 
         internal void Update(GameTime gameTime, IList<TileColumn> columns)
         {
-            mAngle += gameTime.ElapsedGameTime.Milliseconds * kAngleIncrement;
+            int elapsed = gameTime.ElapsedGameTime.Milliseconds;
+            float rotation = elapsed * kAngleIncrement;
+
+            if (IsAlive)
+            {
+                mAngle += rotation;
+            }
+
             if (IsRolling())
             {
-                float rotation = gameTime.ElapsedGameTime.Milliseconds * kAngleIncrement;
-
                 Vector2 support = mLocation - mContact;
                 double supportAngle = Math.Atan2(support.Y, support.X);
                 double newAngle = supportAngle + rotation;
@@ -98,7 +105,16 @@ namespace Opdozitz
                     {
                         Vector2 normal = swungLocation - mContact;
                         normal.Normalize();
-                        mLocation = mContact + normal * kRadius;
+
+                        double angle = Math.Acos(Vector2.Dot(closestPlatform.DirectedNormal, normal));
+                        if (normal.Y > 0 && angle > (Math.PI * 0.9 / 2))
+                        {
+                            Fall();
+                        }
+                        else
+                        {
+                            mLocation = mContact + normal * kRadius;
+                        }
                     }
                     else
                     {
@@ -109,6 +125,12 @@ namespace Opdozitz
                 {
                     mLocation = swungLocation;
                 }
+            }
+            else if (mState == ZitState.Falling)
+            {
+                mFallSpeed += elapsed * kFallForce;
+
+                mLocation.Y += mFallSpeed;
             }
         }
 
@@ -147,7 +169,8 @@ namespace Opdozitz
 
         internal bool InColumn(TileColumn column)
         {
-            return column.InColumn(mLocation.X - kRadius) || column.InColumn(mLocation.X + kRadius);
+            float radius = kRadius + kInColumnPad;
+            return column.InColumn(mLocation.X - radius) || column.InColumn(mLocation.X + radius);
         }
     }
 }
