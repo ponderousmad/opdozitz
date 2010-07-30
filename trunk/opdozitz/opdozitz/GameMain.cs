@@ -38,6 +38,7 @@ namespace Opdozitz
         private Texture2D mBackground;
         private Texture2D mFrame;
         private Texture2D mSelectColumn;
+        private Texture2D mSelectColumnStuck;
 
         private int mSelectedColumn = 1;
 
@@ -89,6 +90,7 @@ namespace Opdozitz
             mBackground = Content.Load<Texture2D>("Images/Background");
             mFrame = Content.Load<Texture2D>("Images/Frame");
             mSelectColumn = Content.Load<Texture2D>("Images/SelectColumn");
+            mSelectColumnStuck = Content.Load<Texture2D>("Images/SelectColumnStuck");
 
             if (sPixel == null)
             {
@@ -186,7 +188,7 @@ namespace Opdozitz
             {
                 for (int column = mSelectedColumn - 1; column > 0; --column)
                 {
-                    if (CanMoveColumn(column))
+                    if (!mColumns[column].Locked)
                     {
                         mSelectedColumn = column;
                         break;
@@ -197,7 +199,7 @@ namespace Opdozitz
             {
                 for (int column = mSelectedColumn + 1; column < mColumns.Count; ++column)
                 {
-                    if (CanMoveColumn(column))
+                    if (!mColumns[column].Locked)
                     {
                         mSelectedColumn = column;
                         break;
@@ -266,7 +268,9 @@ namespace Opdozitz
                 zit.Draw(mSpriteBatch);
             }
             mSpriteBatch.Draw(mFrame, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
-            mSpriteBatch.Draw(mSelectColumn, new Rectangle(mColumns[mSelectedColumn].Left - TileDrawOffset, mColumns[mSelectedColumn].Top + TileSize / 2 - TileDrawOffset, mSelectColumn.Width, mSelectColumn.Height), Color.White);
+            TileColumn selected = mColumns[mSelectedColumn];
+            Texture2D cursor = CanMoveColumn(mSelectedColumn) || selected.Moving ? mSelectColumn : mSelectColumnStuck;
+            mSpriteBatch.Draw(cursor, new Rectangle(selected.Left - TileDrawOffset, selected.Top + TileSize / 2 - TileDrawOffset, cursor.Width, cursor.Height), Color.White);
             mSpriteBatch.End();
 
             base.Draw(gameTime);
