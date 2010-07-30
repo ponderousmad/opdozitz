@@ -25,6 +25,10 @@ namespace Opdozitz
         TransitionTop = 8,
         TransitionBottom = 16,
         Block = 32,
+        SpikesUp = 64,
+        SpikesDown = 128,
+        Start = 256,
+        End = 512
     }
 
     class Tile
@@ -39,6 +43,8 @@ namespace Opdozitz
         private const float kTransitionSlopeRun = GameMain.TileSize * kTransitionSlopeFraction;
         private const float kTransitionSlopeRise = kTransitionSlopeRun * kTransitionSlopeGrade;
         private const int kTransitionArcSteps = 2;
+        private const int kSpikesSize = GameMain.TileSize / 4;
+        private const int kSpikesEdge = GameMain.TileSize / 10;
 
         internal static void LoadContent(ContentManager content)
         {
@@ -151,6 +157,25 @@ namespace Opdozitz
                 if (HasPart(TileParts.Block))
                 {
                     yield return new Rectangle(Left, Top, GameMain.TileSize, GameMain.TileSize);
+                }
+                if (HasPart(TileParts.SpikesUp))
+                {
+                    yield return new Rectangle(Left + kSpikesEdge, Bottom - GameMain.GirderWidth - kSpikesSize, Right-Left - 2 * kSpikesEdge, kSpikesSize);
+                }
+                if (HasPart(TileParts.SpikesDown))
+                {
+                    yield return new Rectangle(Left + kSpikesEdge, Top + GameMain.GirderWidth, Right - Left - 2 * kSpikesEdge, kSpikesSize);
+                }
+            }
+        }
+
+        public IEnumerable<Rectangle> Homes
+        {
+            get
+            {
+                if (HasPart(TileParts.End))
+                {
+                    yield return new Rectangle(Left + Zit.Size/ 4, Top + GameMain.GirderWidth, Zit.Size / 2, Zit.Size);
                 }
             }
         }
