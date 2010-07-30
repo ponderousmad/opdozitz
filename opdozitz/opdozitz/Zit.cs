@@ -28,6 +28,9 @@ namespace Opdozitz
         private static Texture2D sSprite = null;
         private static Flipbook sExplosion = null;
         private static SoundEffect sExplodeSound = null;
+        private static SoundEffect sLandSound = null;
+        private static SoundEffect sHomeSound = null;
+        private static SoundEffect sSpawnSound = null;
 
         private const int kSize = 20;
         private const float kRadius = kSize / 2f;
@@ -45,11 +48,19 @@ namespace Opdozitz
         private float mFallSpeed = 0;
         private Flipbook.Playback mExploding = null;
 
+        public static int Size
+        {
+            get { return kSize; }
+        }
+
         public static void LoadContent(ContentManager content)
         {
             sSprite = content.Load<Texture2D>("Images/Zit");
             sExplosion = new Flipbook(content, "Images/Explode", 9, 2);
             sExplodeSound = content.Load<SoundEffect>("Sounds/Splat");
+            sLandSound = content.Load<SoundEffect>("Sounds/Pip");
+            sHomeSound = content.Load<SoundEffect>("Sounds/Blip");
+            sSpawnSound = content.Load<SoundEffect>("Sounds/Ding");
         }
 
         internal Zit(Tile tile)
@@ -57,6 +68,7 @@ namespace Opdozitz
             LineSegment platform = tile.Platforms.First();
             mContact = platform.Start + platform.Direction * kRadius;
             mLocation = mContact + platform.DirectedNormal * kRadius;
+            sSpawnSound.Play();
         }
 
         internal void Update(GameTime gameTime, IList<TileColumn> columns)
@@ -164,6 +176,7 @@ namespace Opdozitz
                     mContact = newContact;
                     mLocation = mContact + kRadius * closestPlatform.DirectedNormal;
                     mState = ZitState.Rolling;
+                    sLandSound.Play();
                 }
                 else
                 {
@@ -178,12 +191,12 @@ namespace Opdozitz
                     mLocation.Y = GameMain.FrameTop + kRadius;
                     Die(gameTime);
                 }
-                else if (mLocation.Y > (GameMain.FrameBottom -kRadius) )
+                else if (mLocation.Y > (GameMain.FrameBottom - kRadius))
                 {
                     mLocation.Y = GameMain.FrameBottom - kRadius;
                     Die(gameTime);
                 }
-                else
+                else if (mState != ZitState.Falling)
                 {
                     foreach (Tile tile in TilesInCurrentColumns(columns))
                     {
@@ -201,11 +214,25 @@ namespace Opdozitz
             {
                 mExploding = null;
             }
+
+            if (mState == ZitState.Rolling)
+            {
+                foreach (Tile tile in TilesInCurrentColumns(columns))
+                {
+                    foreach (Rectangle home in tile.Homes)
+                    {
+                        if (home.Contains(LocationAsPoint()))
+                        {
+                            MarkHome();
+                        }
+                    }
+                }
+            }
         }
 
         private bool InHazard(Rectangle hazard)
         {
-            Point location = new Point((int)Math.Round(mLocation.X), (int)Math.Round(mLocation.Y));
+            Point location = LocationAsPoint();
             if (HazardCheck(hazard, kSize / 2, 0, location) || HazardCheck(hazard, 0, kSize / 2, location))
             {
                 return true;
@@ -214,6 +241,11 @@ namespace Opdozitz
                    OverlapsCorner(ref hazard, true, false) ||
                    OverlapsCorner(ref hazard, false, true) ||
                    OverlapsCorner(ref hazard, false, false);
+        }
+
+        private Point LocationAsPoint()
+        {
+            return new Point((int)Math.Round(mLocation.X), (int)Math.Round(mLocation.Y));
         }
 
         private bool OverlapsCorner(ref Rectangle hazard, bool top, bool left)
@@ -269,6 +301,15 @@ namespace Opdozitz
                 mState = ZitState.Dead;
                 mExploding = sExplosion.Start(gameTime, kExplosionTimePerFrame);
                 sExplodeSound.Play();
+            }
+        }
+
+        private void MarkHome()
+        {
+            if (mState != ZitState.Home)
+            {
+                mState = ZitState.Home;
+                sHomeSound.Play();
             }
         }
 

@@ -2,7 +2,7 @@
 <Level>
   <Column locked="true">
     <Tile type="Flat, Block" />
-    <Tile type="Flat" />
+    <Tile type="Flat, Start" />
     <Tile type="Block" />
     <Tile type="Block" />
     <Tile type="Block" />
@@ -11,7 +11,7 @@
     <Tile type="Block" />
     <Tile type="Block" />
     <Tile type="Flat, Block" />
-    <Tile type="Flat" />
+    <Tile type="Flat, End" />
     <Tile type="Block" />
   </Column>
   <Column>
@@ -36,7 +36,7 @@
     <Tile type="Empty" />
     <Tile type="SlantUp" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesUp" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
@@ -49,7 +49,7 @@
     <Tile type="TransitionTop" />
     <Tile type="Flat, TransitionBottom" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesUp" />
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="SlantUp" />
@@ -65,15 +65,15 @@
     <Tile type="Empty" />
     <Tile type="SlantDown" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesDown" />
     <Tile type="Empty" />
     <Tile type="Flat" />
     <Tile type="Flat" />
   </Column>
   <Column>
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesDown" />
+    <Tile type="Flat, SpikesDown" />
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="SlantDown" />
@@ -87,14 +87,14 @@
   <Column>
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesUp, SpikesDown" />
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="SlantUp" />
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesDown" />
     <Tile type="Flat" />
     <Tile type="Flat" />
   </Column>
@@ -108,14 +108,14 @@
     <Tile type="Empty" />
     <Tile type="SlantDown" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesDown" />
+    <Tile type="Flat, SpikesUp" />
     <Tile type="Flat" />
   </Column>
   <Column>
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesUp" />
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Empty" />
@@ -144,21 +144,7 @@
     <Tile type="Flat" />
     <Tile type="Flat" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="SlantDown" />
-    <Tile type="Empty" />
-    <Tile type="SlantUp" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesUp" />
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="SlantDown" />
@@ -171,9 +157,23 @@
   <Column>
     <Tile type="Flat" />
     <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Flat, SpikesDown" />
+    <Tile type="Flat, SpikesDown" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+  </Column>
+  <Column>
+    <Tile type="Flat" />
+    <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="Flat" />
-    <Tile type="Flat" />
+    <Tile type="Flat, SpikesDown" />
     <Tile type="Empty" />
     <Tile type="SlantDown" />
     <Tile type="SlantUp" />
@@ -189,7 +189,7 @@
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="Flat" />
-    <Tile type="Empty" />
+    <Tile type="Empty, SpikesDown" />
     <Tile type="Flat" />
     <Tile type="Empty" />
     <Tile type="Flat" />
