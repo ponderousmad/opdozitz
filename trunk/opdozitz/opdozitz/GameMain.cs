@@ -28,6 +28,12 @@ namespace Opdozitz
         public const int ColumnVOffset = 0;
         public const int FrameTop = 25;
         public const int FrameBottom = 575;
+        public const int FrameLeft = 25;
+
+        private const double kBaseSpawnFrequency = 5000f;
+        private const double kLevelSpawnFactor = 0.9f;
+        private const double kLevelSpeedFactor = 1.2f;
+        private const int kZitsPerLevel = 20;
 
         private static Texture2D sPixel;
 
@@ -43,8 +49,10 @@ namespace Opdozitz
 
         private int mSelectedColumn = 1;
         private int mSelectedTile = 0;
-        private int mLevel = 1;
+        private int mLevel = 0;
         private bool mEditing = false;
+
+        private int mSinceLastSpawn = 0;
 
         private KeyboardState mLastKeyboardState = new KeyboardState();
 
@@ -124,6 +132,7 @@ namespace Opdozitz
 
         private void LoadLevel(int number)
         {
+            mLevel = number;
             using (System.IO.Stream stream = Load("Levels", "Level" + number.ToString() + ".xml"))
             using (System.IO.TextReader reader = new System.IO.StreamReader(stream))
             {
@@ -143,7 +152,6 @@ namespace Opdozitz
                     }
                     columnLocation += TileSize;
                 }
-                SpawnZit();
             }
         }
 
@@ -160,9 +168,30 @@ namespace Opdozitz
             }
         }
 
+        private void StartLevel(GameTime gameTime)
+        {
+            mZits.Clear();
+            mSinceLastSpawn = 0;
+        }
+
+        private void CheckSpawn(GameTime gameTime)
+        {
+            mSinceLastSpawn += gameTime.ElapsedGameTime.Milliseconds;
+
+            if (mZits.Count < kZitsPerLevel)
+            {
+                double spawnFrequency = Math.Pow(kLevelSpawnFactor, mLevel) * kBaseSpawnFrequency;
+                if (mSinceLastSpawn > spawnFrequency)
+                {
+                    SpawnZit();
+                }
+            }
+        }
+
         private void SpawnZit()
         {
-            mZits.Add(new Zit(mColumns[0][1]));
+            mZits.Add(new Zit(mColumns[0][1], (float)Math.Pow(kLevelSpeedFactor,mLevel)));
+            mSinceLastSpawn = 0;
         }
 
         /// <summary>
@@ -187,7 +216,7 @@ namespace Opdozitz
 
             KeyboardState keyboardState = Keyboard.GetState();
 
-            keyboardState = UpdateSelectedColumn(keyboardState);
+            UpdateSelectedColumn(keyboardState);
 
             if (IsKeyPress(keyboardState, Keys.E) && IsControlDown(keyboardState))
             {
@@ -200,14 +229,14 @@ namespace Opdozitz
             }
             else
             {
-                keyboardState = UpdateGameplay(gameTime, keyboardState);
+                UpdateGameplay(gameTime, keyboardState);
             }
 
             mLastKeyboardState = keyboardState;
             base.Update(gameTime);
         }
 
-        private KeyboardState UpdateSelectedColumn(KeyboardState keyboardState)
+        private void UpdateSelectedColumn(KeyboardState keyboardState)
         {
             if (IsKeyPress(keyboardState, Keys.Left))
             {
@@ -231,10 +260,9 @@ namespace Opdozitz
                     }
                 }
             }
-            return keyboardState;
         }
 
-        private KeyboardState UpdateGameplay(GameTime gameTime, KeyboardState keyboardState)
+        private void UpdateGameplay(GameTime gameTime, KeyboardState keyboardState)
         {
             if (keyboardState.IsKeyDown(Keys.Up))
             {
@@ -253,20 +281,24 @@ namespace Opdozitz
 
             if (IsKeyPress(keyboardState, Keys.Escape))
             {
-                mZits.Clear();
-                SpawnZit();
+                StartLevel(gameTime);
             }
+
+            CheckSpawn(gameTime);
 
             foreach (Zit zit in mZits)
             {
                 zit.Update(gameTime, mColumns);
+                if (IsKeyPress(keyboardState, Keys.Space) && zit.IsAlive && zit.InColumn(CurrentColumn))
+                {
+                    zit.Die(gameTime);
+                }
             }
 
             foreach (TileColumn column in mColumns)
             {
                 column.Update(gameTime);
             }
-            return keyboardState;
         }
 
         private void UpdateEdit(KeyboardState keyboardState)
