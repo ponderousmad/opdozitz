@@ -132,5 +132,17 @@ namespace Opdozitz
                 }
             }
         }
+
+        internal void Store(Opdozitz.Utils.IDataWriter writer)
+        {
+            using (Opdozitz.Utils.IDataWriter element = writer["Column"])
+            {
+                element.BoolAttribute("locked", Locked, false);
+                foreach (Tile t in Tiles)
+                {
+                    t.Store(element);
+                }
+            }
+        }
     }
 }

@@ -39,8 +39,12 @@ namespace Opdozitz
         private Texture2D mFrame;
         private Texture2D mSelectColumn;
         private Texture2D mSelectColumnStuck;
+        private Texture2D mSelectTile;
 
         private int mSelectedColumn = 1;
+        private int mSelectedTile = 0;
+        private int mLevel = 1;
+        private bool mEditing = false;
 
         private KeyboardState mLastKeyboardState = new KeyboardState();
 
@@ -91,6 +95,7 @@ namespace Opdozitz
             mFrame = Content.Load<Texture2D>("Images/Frame");
             mSelectColumn = Content.Load<Texture2D>("Images/SelectColumn");
             mSelectColumnStuck = Content.Load<Texture2D>("Images/SelectColumnStuck");
+            mSelectTile = Content.Load<Texture2D>("Images/SelectTile");
 
             if (sPixel == null)
             {
@@ -142,6 +147,19 @@ namespace Opdozitz
             }
         }
 
+        private void StoreLevel()
+        {
+            string path = System.IO.Path.Combine(ContentBuildPath, @"Levels\\Level" + mLevel.ToString() + ".xml");
+            using (Utils.DocumentWriter writer = new Opdozitz.Utils.DocumentWriter(path))
+            using (Utils.IDataWriter root = writer["Level"])
+            {
+                foreach (TileColumn column in mColumns)
+                {
+                    column.Store(root);
+                }
+            }
+        }
+
         private void SpawnZit()
         {
             mZits.Add(new Zit(mColumns[0][1]));
@@ -169,28 +187,35 @@ namespace Opdozitz
 
             KeyboardState keyboardState = Keyboard.GetState();
 
-            if (keyboardState.IsKeyDown(Keys.Up))
+            keyboardState = UpdateSelectedColumn(keyboardState);
+
+            if (IsKeyPress(keyboardState, Keys.E) && IsControlDown(keyboardState))
             {
-                if (CanMoveColumn(mSelectedColumn))
-                {
-                    mColumns[mSelectedColumn].MoveUp();
-                }
-            }
-            else if (keyboardState.IsKeyDown(Keys.Down))
-            {
-                if (CanMoveColumn(mSelectedColumn))
-                {
-                    mColumns[mSelectedColumn].MoveDown();
-                }
+                mEditing = !mEditing;
             }
 
+            if (mEditing)
+            {
+                UpdateEdit(keyboardState);
+            }
+            else
+            {
+                keyboardState = UpdateGameplay(gameTime, keyboardState);
+            }
+
+            mLastKeyboardState = keyboardState;
+            base.Update(gameTime);
+        }
+
+        private KeyboardState UpdateSelectedColumn(KeyboardState keyboardState)
+        {
             if (IsKeyPress(keyboardState, Keys.Left))
             {
                 for (int column = mSelectedColumn - 1; column > 0; --column)
                 {
                     if (!mColumns[column].Locked)
                     {
-                        mSelectedColumn = column;
+                        SetSelectedColumn(column);
                         break;
                     }
                 }
@@ -204,6 +229,25 @@ namespace Opdozitz
                         mSelectedColumn = column;
                         break;
                     }
+                }
+            }
+            return keyboardState;
+        }
+
+        private KeyboardState UpdateGameplay(GameTime gameTime, KeyboardState keyboardState)
+        {
+            if (keyboardState.IsKeyDown(Keys.Up))
+            {
+                if (CanMoveCurrent)
+                {
+                    CurrentColumn.MoveUp();
+                }
+            }
+            else if (keyboardState.IsKeyDown(Keys.Down))
+            {
+                if (CanMoveCurrent)
+                {
+                    CurrentColumn.MoveDown();
                 }
             }
 
@@ -222,20 +266,100 @@ namespace Opdozitz
             {
                 column.Update(gameTime);
             }
-
-            mLastKeyboardState = keyboardState;
-            base.Update(gameTime);
+            return keyboardState;
         }
 
-        private bool CanMoveColumn(int column)
+        private void UpdateEdit(KeyboardState keyboardState)
         {
-            if (mColumns[column].Locked || mColumns[column].Moving)
+            if (IsKeyPress(keyboardState, Keys.S) && IsControlDown(keyboardState))
+            {
+                StoreLevel();
+            }
+            if (IsKeyPress(keyboardState, Keys.Up))
+            {
+                mSelectedTile = Math.Max(0, mSelectedTile - 1);
+            }
+            else if (IsKeyPress(keyboardState, Keys.Down))
+            {
+                mSelectedTile = Math.Min(CurrentColumn.Length - 1, mSelectedTile + 1);
+            }
+            else if (IsKeyPress(keyboardState, Keys.D1))
+            {
+                CurrentTile.TogglePart(TileParts.Flat);
+            }
+            else if (IsKeyPress(keyboardState, Keys.D2))
+            {
+                CurrentTile.TogglePart(TileParts.SlantUp);
+            }
+            else if (IsKeyPress(keyboardState, Keys.D3))
+            {
+                CurrentTile.TogglePart(TileParts.SlantDown);
+            }
+            else if (IsKeyPress(keyboardState, Keys.D4))
+            {
+                CurrentTile.TogglePart(TileParts.SpikesUp);
+            }
+            else if (IsKeyPress(keyboardState, Keys.D5))
+            {
+                CurrentTile.TogglePart(TileParts.SpikesDown);
+            }
+            else if (IsKeyPress(keyboardState, Keys.D6))
+            {
+                CurrentTile.TogglePart(TileParts.TransitionTop);
+            }
+            else if (IsKeyPress(keyboardState, Keys.D7))
+            {
+                CurrentTile.TogglePart(TileParts.TransitionBottom);
+            }
+            else if (IsKeyPress(keyboardState, Keys.D8))
+            {
+            }
+            else if (IsKeyPress(keyboardState, Keys.D9))
+            {
+            }
+            else if (IsKeyPress(keyboardState, Keys.D0))
+            {
+            }
+        }
+
+        private static bool IsControlDown(KeyboardState keyboardState)
+        {
+            return keyboardState.IsKeyDown(Keys.RightControl) || keyboardState.IsKeyDown(Keys.LeftControl);
+        }
+
+        private bool IsKeyPress(KeyboardState keyboardState, Keys key)
+        {
+            return keyboardState.IsKeyDown(key) && !mLastKeyboardState.IsKeyDown(key);
+        }
+
+        private TileColumn CurrentColumn
+        {
+            get
+            {
+                return mColumns[mSelectedColumn];
+            }
+        }
+
+        private void SetSelectedColumn(int column)
+        {
+            mSelectedColumn = column;
+            mSelectedTile = Math.Min(CurrentColumn.Length - 1, mSelectedTile);
+        }
+
+        private Tile CurrentTile
+        {
+            get { return CurrentColumn[mSelectedTile]; }
+        }
+
+        private bool CanMoveColumn(TileColumn column)
+        {
+            if (column.Locked || column.Moving)
             {
                 return false;
             }
             foreach (Zit zit in mZits)
             {
-                if (zit.IsAlive && zit.InColumn(mColumns[column]))
+                if (zit.IsAlive && zit.InColumn(column))
                 {
                     return false;
                 }
@@ -243,9 +367,12 @@ namespace Opdozitz
             return true;
         }
 
-        private bool IsKeyPress(KeyboardState keyboardState, Keys key)
+        private bool CanMoveCurrent
         {
-            return keyboardState.IsKeyDown(key) && !mLastKeyboardState.IsKeyDown(key);
+            get
+            {
+                return CanMoveColumn(CurrentColumn);
+            }
         }
 
         /// <summary>
@@ -268,9 +395,12 @@ namespace Opdozitz
                 zit.Draw(mSpriteBatch);
             }
             mSpriteBatch.Draw(mFrame, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
-            TileColumn selected = mColumns[mSelectedColumn];
-            Texture2D cursor = CanMoveColumn(mSelectedColumn) || selected.Moving ? mSelectColumn : mSelectColumnStuck;
-            mSpriteBatch.Draw(cursor, new Rectangle(selected.Left - TileDrawOffset, selected.Top + TileSize / 2 - TileDrawOffset, cursor.Width, cursor.Height), Color.White);
+            Texture2D cursor = (CanMoveCurrent || CurrentColumn.Moving) ? mSelectColumn : mSelectColumnStuck;
+            mSpriteBatch.Draw(cursor, new Rectangle(CurrentColumn.Left - TileDrawOffset, CurrentColumn.Top + TileSize / 2 - TileDrawOffset, cursor.Width, cursor.Height), Color.White);
+            if (mEditing)
+            {
+                mSpriteBatch.Draw(mSelectTile, new Rectangle(CurrentTile.Left, CurrentTile.Top, GameMain.TileSize, GameMain.TileSize), Color.White);
+            }
             mSpriteBatch.End();
 
             base.Draw(gameTime);
