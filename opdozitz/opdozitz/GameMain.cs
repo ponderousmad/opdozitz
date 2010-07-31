@@ -29,8 +29,9 @@ namespace Opdozitz
         public const int FrameTop = 25;
         public const int FrameBottom = 575;
         public const int FrameLeft = 25;
+        public const int FrameRight = 775;
 
-        private const double kBaseSpawnFrequency = 5000f;
+        private const double kBaseSpawnInterval = 5000f;
         private const double kLevelSpawnFactor = 0.9f;
         private const double kLevelSpeedFactor = 1.2f;
         private const int kZitsPerLevel = 20;
@@ -47,9 +48,14 @@ namespace Opdozitz
         private Texture2D mSelectColumnStuck;
         private Texture2D mSelectTile;
 
+        private SpriteFont mDisplayFont;
+        private SpriteFont mDisplayTitleFont;
+        private SpriteFont mScoreFont;
+
         private int mSelectedColumn = 1;
         private int mSelectedTile = 0;
         private int mLevel = 0;
+        private int mScore = 0;
         private bool mEditing = false;
 
         private int mSinceLastSpawn = 0;
@@ -104,6 +110,10 @@ namespace Opdozitz
             mSelectColumn = Content.Load<Texture2D>("Images/SelectColumn");
             mSelectColumnStuck = Content.Load<Texture2D>("Images/SelectColumnStuck");
             mSelectTile = Content.Load<Texture2D>("Images/SelectTile");
+
+            mDisplayFont = Content.Load<SpriteFont>("Fonts/Displays");
+            mDisplayTitleFont = Content.Load<SpriteFont>("Fonts/DisplaysTitle");
+            mScoreFont = Content.Load<SpriteFont>("Fonts/Score");
 
             if (sPixel == null)
             {
@@ -180,17 +190,21 @@ namespace Opdozitz
 
             if (mZits.Count < kZitsPerLevel)
             {
-                double spawnFrequency = Math.Pow(kLevelSpawnFactor, mLevel) * kBaseSpawnFrequency;
-                if (mSinceLastSpawn > spawnFrequency)
+                if (mSinceLastSpawn > ZitSpawnInterval())
                 {
                     SpawnZit();
                 }
             }
         }
 
+        private double ZitSpawnInterval()
+        {
+            return Math.Pow(kLevelSpawnFactor, mLevel) * kBaseSpawnInterval;
+        }
+
         private void SpawnZit()
         {
-            mZits.Add(new Zit(mColumns[0][1], (float)Math.Pow(kLevelSpeedFactor,mLevel)));
+            mZits.Add(new Zit(mColumns[0][1], (float)Math.Pow(kLevelSpeedFactor, mLevel)));
             mSinceLastSpawn = 0;
         }
 
@@ -433,9 +447,55 @@ namespace Opdozitz
             {
                 mSpriteBatch.Draw(mSelectTile, new Rectangle(CurrentTile.Left, CurrentTile.Top, GameMain.TileSize, GameMain.TileSize), Color.White);
             }
+
+            const int kLeftDisplayEdge = 10;
+            const int kLeftDisplayTop = 255;
+            const int kRightDisplayEdge = 738;
+            const int kRightDisplayTop = 28;
+            const int kLineHeight = 18;
+            const int kScoreHeight = 22;
+            const int kTitleHeight = 14;
+            const int kDisplaysWidth = 55;
+            int top = kLeftDisplayTop;
+            DrawTextCentered(mDisplayTitleFont, string.Format("Zits:", mZits.Count, kZitsPerLevel), top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
+            top += kTitleHeight;
+            DrawTextCentered(mDisplayFont, string.Format("{0} of {1}", mZits.Count, kZitsPerLevel), top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
+            top += kLineHeight;
+
+            const int kMillisPerSecond = 1000;
+            double zitSpawnRemaining = Math.Max(0, ZitSpawnInterval() - mSinceLastSpawn) / kMillisPerSecond;
+
+            DrawTextCentered(mDisplayTitleFont, string.Format("Spawn In:", mZits.Count, kZitsPerLevel), top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
+            top += kTitleHeight;
+            DrawTextCentered(mDisplayFont, mZits.Count <kZitsPerLevel ? string.Format("{0:0.0} sec", zitSpawnRemaining) : "----", top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
+            top += kLineHeight;
+
+            DrawTextCentered(mDisplayTitleFont, string.Format("Home:", mZits.Count, kZitsPerLevel), top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
+            top += kTitleHeight;
+            DrawTextCentered(mDisplayFont, ZitHomeCount().ToString(), top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
+            top += kLineHeight;
+
+            top = kRightDisplayTop;
+            DrawTextCentered(mDisplayTitleFont, string.Format("Score:", mZits.Count, kZitsPerLevel), top, kRightDisplayEdge, kDisplaysWidth, Color.Blue);
+            top += kTitleHeight;
+            DrawTextCentered(mScoreFont, (mScore + ZitHomeCount()).ToString(), top, kRightDisplayEdge, kDisplaysWidth, Color.Blue);
+            top += kScoreHeight;
+            DrawTextCentered(mDisplayFont, string.Format("Level {0}", mLevel), top, kRightDisplayEdge, kDisplaysWidth, Color.Blue);
+
             mSpriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void DrawTextCentered(SpriteFont font, string text, int top, int left, int width, Color color)
+        {
+            left += (int)Math.Floor((width - font.MeasureString(text).X) / 2);
+            mSpriteBatch.DrawString(font, text, new Vector2(left, top), color);
+        }
+
+        private int ZitHomeCount()
+        {
+            return mZits.Where(z => z.IsHome).Count();
         }
     }
 }
