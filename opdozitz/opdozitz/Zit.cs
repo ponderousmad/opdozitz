@@ -35,12 +35,12 @@ namespace Opdozitz
         private const int kSize = 20;
         private const float kRadius = kSize / 2f;
         private const float kAngleIncrement = 0.004f;
-        private const int kInColumnPad = 5;
         private const float kFallForce = 0.03f;
         private const float kFatalVelocity = 9;
         private const int kExplosionTimePerFrame = 80;
         private static readonly Vector2 kExplosionDrawSize = new Vector2(kSize * 2, kSize * 2);
 
+        private float mSpeedFactor = 1;
         private Vector2 mLocation;
         private Vector2 mContact;
         private float mAngle = 0;
@@ -63,8 +63,9 @@ namespace Opdozitz
             sSpawnSound = content.Load<SoundEffect>("Sounds/Ding");
         }
 
-        internal Zit(Tile tile)
+        internal Zit(Tile tile, float speedFactor)
         {
+            mSpeedFactor = speedFactor;
             LineSegment platform = tile.Platforms.First();
             mContact = platform.Start + platform.Direction * kRadius;
             mLocation = mContact + platform.DirectedNormal * kRadius;
@@ -74,7 +75,7 @@ namespace Opdozitz
         internal void Update(GameTime gameTime, IList<TileColumn> columns)
         {
             int elapsed = gameTime.ElapsedGameTime.Milliseconds;
-            float rotation = elapsed * kAngleIncrement;
+            float rotation = elapsed * kAngleIncrement * mSpeedFactor;
 
             if (IsAlive)
             {
@@ -95,7 +96,8 @@ namespace Opdozitz
                 LineSegment closestPlatform = null;
                 Vector2 newContact = mContact;
                 bool closestAtEnd = false;
-                float minDistanceSquared = float.MaxValue;
+                const float kDistanceCheckFudge = 1.1f;
+                float minDistanceSquared = kRadius * kRadius * kDistanceCheckFudge;
                 foreach (Tile tile in TilesInCurrentColumns(columns, left, right))
                 {
                     foreach (LineSegment platform in tile.Platforms)
@@ -196,6 +198,10 @@ namespace Opdozitz
                     mLocation.Y = GameMain.FrameBottom - kRadius;
                     Die(gameTime);
                 }
+                else if (mLocation.X < (GameMain.FrameLeft + kRadius))
+                {
+                    Die(gameTime);
+                }
                 else if (mState != ZitState.Falling)
                 {
                     foreach (Tile tile in TilesInCurrentColumns(columns))
@@ -269,11 +275,14 @@ namespace Opdozitz
         {
             foreach (TileColumn column in columns)
             {
-                if (column.InColumn(left) || column.InColumn(right))
+                if (!column.Moving)
                 {
-                    foreach (Tile tile in column.Tiles)
+                    if (column.InColumn(left) || column.InColumn(right))
                     {
-                        yield return tile;
+                        foreach (Tile tile in column.Tiles)
+                        {
+                            yield return tile;
+                        }
                     }
                 }
             }
@@ -291,10 +300,13 @@ namespace Opdozitz
 
         private void Fall()
         {
-            mState = ZitState.Falling;
+            if (mState != ZitState.Falling)
+            {
+                mState = ZitState.Falling;
+            }
         }
 
-        private void Die(GameTime gameTime)
+        internal void Die(GameTime gameTime)
         {
             if (IsAlive)
             {
@@ -332,8 +344,7 @@ namespace Opdozitz
 
         internal bool InColumn(TileColumn column)
         {
-            float radius = kRadius + kInColumnPad;
-            return column.InColumn(mLocation.X - radius) || column.InColumn(mLocation.X + radius);
+            return column.InColumn(mLocation.X);
         }
     }
 }
