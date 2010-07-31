@@ -141,6 +141,7 @@ namespace Opdozitz
                 else
                 {
                     mLocation = swungLocation;
+                    Fall();
                 }
             }
             else if (mState == ZitState.Falling)
@@ -198,7 +199,7 @@ namespace Opdozitz
                     mLocation.Y = GameMain.FrameBottom - kRadius;
                     Die(gameTime);
                 }
-                else if (mLocation.X < (GameMain.FrameLeft + kRadius))
+                else if (mLocation.X < (GameMain.FrameLeft + kRadius) || GameMain.FrameRight < mLocation.X)
                 {
                     Die(gameTime);
                 }
@@ -340,6 +341,11 @@ namespace Opdozitz
         public bool IsAlive
         {
             get { return mState == ZitState.Rolling || mState == ZitState.Falling; }
+        }
+
+        internal bool IsHome
+        {
+            get { return mState == ZitState.Home; }
         }
 
         internal bool InColumn(TileColumn column)
