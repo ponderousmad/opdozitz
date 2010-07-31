@@ -201,7 +201,7 @@ namespace Opdozitz
             return new Tile(Parts, mLeft, newTop);
         }
 
-        public TileParts Parts
+        private TileParts Parts
         {
             get { return mParts; }
         }
@@ -230,6 +230,19 @@ namespace Opdozitz
         public override string ToString()
         {
             return "Location: " + Left.ToString() + ", " + Top.ToString() + " Parts: " + mParts.ToString();
+        }
+
+        internal void Store(Opdozitz.Utils.IDataWriter writer)
+        {
+            using (Opdozitz.Utils.IDataWriter element = writer["Tile"])
+            {
+                element.Attribute("type", Parts.ToString());
+            }
+        }
+
+        internal void TogglePart(TileParts part)
+        {
+            mParts ^= part;
         }
     }
 }
