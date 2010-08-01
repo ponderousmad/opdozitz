@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Level>
+<Level startDelay="5000">
   <Column locked="True">
     <Tile type="Flat, Block" />
     <Tile type="Flat, Start" />
