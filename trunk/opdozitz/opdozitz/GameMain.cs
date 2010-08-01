@@ -355,8 +355,13 @@ namespace Opdozitz
                 }
             }
 
-            if (mLevel < kMaxLevel && (IsKeyPress(keyboardState, Keys.N) || LevelSuccessful()))
+            bool success = LevelSuccessful();
+            if (mLevel < kMaxLevel && (IsKeyPress(keyboardState, Keys.N) || success))
             {
+                if (success)
+                {
+                    mScore += ZitHomeCount();
+                }
                 StartLevel(mLevel + 1, gameTime);
             }
             if (mLevel > 1 && IsKeyPress(keyboardState, Keys.P))
@@ -367,7 +372,7 @@ namespace Opdozitz
 
         private bool LevelSuccessful()
         {
-            return (LevelDone() && (ZitHomeCount() > kZitsPerLevel / 2));
+            return (LevelDone() && (ZitHomeCount() >= (kZitsPerLevel / 2)));
         }
 
         private bool LevelDone()
