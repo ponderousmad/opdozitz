@@ -97,7 +97,31 @@
     <Compile Include="Zit.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Content\Levels\Level1.xml" />
+    <Content Include="Content\Levels\Level01.xml" />
+    <Content Include="Content\Levels\Level02.xml" />
+    <Content Include="Content\Levels\Level03.xml" />
+    <Content Include="Content\Levels\Level04.xml" />
+    <Content Include="Content\Levels\Level05.xml" />
+    <Content Include="Content\Levels\Level06.xml" />
+    <Content Include="Content\Levels\Level07.xml" />
+    <Content Include="Content\Levels\Level08.xml" />
+    <Content Include="Content\Levels\Level09.xml" />
+    <Content Include="Content\Levels\Level10.xml" />
+    <Content Include="Content\Levels\Level11.xml" />
+    <Content Include="Content\Levels\Level12.xml" />
+    <Content Include="Content\Levels\Level13.xml" />
+    <Content Include="Content\Levels\Level14.xml" />
+    <Content Include="Content\Levels\Level15.xml" />
+    <Content Include="Content\Levels\Level16.xml" />
+    <Content Include="Content\Levels\Level17.xml" />
+    <Content Include="Content\Levels\Level18.xml" />
+    <Content Include="Content\Levels\Level19.xml" />
+    <Content Include="Content\Levels\Level20.xml" />
+    <Content Include="Content\Levels\Level21.xml" />
+    <Content Include="Content\Levels\Level22.xml" />
+    <Content Include="Content\Levels\Level23.xml" />
+    <Content Include="Content\Levels\Level24.xml" />
+    <Content Include="Content\Levels\Level25.xml" />
     <Content Include="Game.ico" />
     <Content Include="GameThumbnail.png" />
   </ItemGroup>

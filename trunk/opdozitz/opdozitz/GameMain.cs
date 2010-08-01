@@ -31,10 +31,14 @@ namespace Opdozitz
         public const int FrameLeft = 25;
         public const int FrameRight = 775;
 
-        private const double kBaseSpawnInterval = 5000f;
-        private const double kLevelSpawnFactor = 0.9f;
-        private const double kLevelSpeedFactor = 1.2f;
+        private const double kBaseSpawnInterval = 5000;
+        private const double kLevelSpawnFactor = 0.95;
+        private const float kLevelSpeedFactor = 0.2f;
+        private const double kSpawnRateFactorRatio = 0.8;
+        private const int kMaxSpawnRateFactor = 10;
         private const int kZitsPerLevel = 20;
+        private const int kMinLevel = 1;
+        private const int kMaxLevel = 25;
 
         private static Texture2D sPixel;
 
@@ -57,8 +61,10 @@ namespace Opdozitz
         private int mLevel = 0;
         private int mScore = 0;
         private bool mEditing = false;
+        private bool mEdited = false;
 
         private int mSinceLastSpawn = 0;
+        private int mSpawnRateFactor = 1;
 
         private KeyboardState mLastKeyboardState = new KeyboardState();
 
@@ -87,7 +93,7 @@ namespace Opdozitz
 
             base.Initialize();
 
-            LoadLevel(1);
+            LoadLevel(kMinLevel);
         }
 
         private static void RunTests()
@@ -143,7 +149,7 @@ namespace Opdozitz
         private void LoadLevel(int number)
         {
             mLevel = number;
-            using (System.IO.Stream stream = Load("Levels", "Level" + number.ToString() + ".xml"))
+            using (System.IO.Stream stream = Load("Levels", LevelName(mLevel)))
             using (System.IO.TextReader reader = new System.IO.StreamReader(stream))
             {
                 int columnLocation = ColumnXOffset;
@@ -165,9 +171,14 @@ namespace Opdozitz
             }
         }
 
+        private static string LevelName(int number)
+        {
+            return string.Format("Level{0:00}.xml", number);
+        }
+
         private void StoreLevel()
         {
-            string path = System.IO.Path.Combine(ContentBuildPath, @"Levels\\Level" + mLevel.ToString() + ".xml");
+            string path = System.IO.Path.Combine(System.IO.Path.Combine(ContentBuildPath, "Levels"), LevelName(mLevel));
             using (Utils.DocumentWriter writer = new Opdozitz.Utils.DocumentWriter(path))
             using (Utils.IDataWriter root = writer["Level"])
             {
@@ -182,6 +193,13 @@ namespace Opdozitz
         {
             mZits.Clear();
             mSinceLastSpawn = 0;
+            mSpawnRateFactor = 1;
+        }
+
+        private void StartLevel(int level, GameTime gameTime)
+        {
+            LoadLevel(level);
+            StartLevel(gameTime);
         }
 
         private void CheckSpawn(GameTime gameTime)
@@ -199,12 +217,12 @@ namespace Opdozitz
 
         private double ZitSpawnInterval()
         {
-            return Math.Pow(kLevelSpawnFactor, mLevel) * kBaseSpawnInterval;
+            return Math.Pow(kLevelSpawnFactor, mLevel) * kBaseSpawnInterval * Math.Pow(kSpawnRateFactorRatio, mSpawnRateFactor);
         }
 
         private void SpawnZit()
         {
-            mZits.Add(new Zit(mColumns[0][1], (float)Math.Pow(kLevelSpeedFactor, mLevel)));
+            mZits.Add(new Zit(mColumns[0][1], 1 + kLevelSpeedFactor * mLevel));
             mSinceLastSpawn = 0;
         }
 
@@ -234,6 +252,11 @@ namespace Opdozitz
 
             if (IsKeyPress(keyboardState, Keys.E) && IsControlDown(keyboardState))
             {
+                if (mEditing && mEdited)
+                {
+                    mEdited = false;
+                    StoreLevel();
+                }
                 mEditing = !mEditing;
             }
 
@@ -293,34 +316,81 @@ namespace Opdozitz
                 }
             }
 
-            if (IsKeyPress(keyboardState, Keys.Escape))
+            if (IsKeyPress(keyboardState, Keys.OemPeriod))
             {
-                StartLevel(gameTime);
+                mSpawnRateFactor = Math.Min(kMaxSpawnRateFactor, mSpawnRateFactor + 1);
+            }
+            else if (IsKeyPress(keyboardState, Keys.OemComma))
+            {
+                mSpawnRateFactor = Math.Max(1, mSpawnRateFactor - 1);
             }
 
-            CheckSpawn(gameTime);
-
-            foreach (Zit zit in mZits)
+            if (IsKeyPress(keyboardState, Keys.Escape))
             {
-                zit.Update(gameTime, mColumns);
-                if (IsKeyPress(keyboardState, Keys.Space) && zit.IsAlive && zit.InColumn(CurrentColumn))
+                StartLevel(mLevel, gameTime);
+            }
+
+            int reps = 1;
+            if (IsShiftDown(keyboardState))
+            {
+                reps = 4;
+            }
+
+            for (; reps > 0; --reps)
+            {
+                CheckSpawn(gameTime);
+
+                foreach (Zit zit in mZits)
                 {
-                    zit.Die(gameTime);
+                    zit.Update(gameTime, mColumns);
+                    if ((IsKeyPress(keyboardState, Keys.Space) && !IsShiftDown(keyboardState)) && zit.IsAlive && zit.InColumn(CurrentColumn))
+                    {
+                        zit.Die(gameTime);
+                    }
+                }
+
+                foreach (TileColumn column in mColumns)
+                {
+                    column.Update(gameTime);
                 }
             }
 
-            foreach (TileColumn column in mColumns)
+            if (mLevel < kMaxLevel && (IsKeyPress(keyboardState, Keys.N) || LevelSuccessful()))
             {
-                column.Update(gameTime);
+                StartLevel(mLevel + 1, gameTime);
+            }
+            if (mLevel > 1 && IsKeyPress(keyboardState, Keys.P))
+            {
+                StartLevel(mLevel - 1, gameTime);
+            }
+        }
+
+        private bool LevelSuccessful()
+        {
+            return (LevelDone() && (ZitHomeCount() > kZitsPerLevel / 2));
+        }
+
+        private bool LevelDone()
+        {
+            if (mZits.Count == kZitsPerLevel)
+            {
+                foreach (Zit zit in mZits)
+                {
+                    if (zit.IsAlive)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
         private void UpdateEdit(KeyboardState keyboardState)
         {
-            if (IsKeyPress(keyboardState, Keys.S) && IsControlDown(keyboardState))
-            {
-                StoreLevel();
-            }
             if (IsKeyPress(keyboardState, Keys.Up))
             {
                 mSelectedTile = Math.Max(0, mSelectedTile - 1);
@@ -331,31 +401,31 @@ namespace Opdozitz
             }
             else if (IsKeyPress(keyboardState, Keys.D1))
             {
-                CurrentTile.TogglePart(TileParts.Flat);
+                ToggleTilePart(TileParts.Flat);
             }
             else if (IsKeyPress(keyboardState, Keys.D2))
             {
-                CurrentTile.TogglePart(TileParts.SlantUp);
+                ToggleTilePart(TileParts.SlantUp);
             }
             else if (IsKeyPress(keyboardState, Keys.D3))
             {
-                CurrentTile.TogglePart(TileParts.SlantDown);
+                ToggleTilePart(TileParts.SlantDown);
             }
             else if (IsKeyPress(keyboardState, Keys.D4))
             {
-                CurrentTile.TogglePart(TileParts.SpikesUp);
+                ToggleTilePart(TileParts.SpikesUp);
             }
             else if (IsKeyPress(keyboardState, Keys.D5))
             {
-                CurrentTile.TogglePart(TileParts.SpikesDown);
+                ToggleTilePart(TileParts.SpikesDown);
             }
             else if (IsKeyPress(keyboardState, Keys.D6))
             {
-                CurrentTile.TogglePart(TileParts.TransitionTop);
+                ToggleTilePart(TileParts.TransitionTop);
             }
             else if (IsKeyPress(keyboardState, Keys.D7))
             {
-                CurrentTile.TogglePart(TileParts.TransitionBottom);
+                ToggleTilePart(TileParts.TransitionBottom);
             }
             else if (IsKeyPress(keyboardState, Keys.D8))
             {
@@ -368,9 +438,20 @@ namespace Opdozitz
             }
         }
 
+        private void ToggleTilePart(TileParts part)
+        {
+            CurrentTile.TogglePart(part);
+            mEdited = true;
+        }
+
         private static bool IsControlDown(KeyboardState keyboardState)
         {
             return keyboardState.IsKeyDown(Keys.RightControl) || keyboardState.IsKeyDown(Keys.LeftControl);
+        }
+
+        private static bool IsShiftDown(KeyboardState keyboardState)
+        {
+            return keyboardState.IsKeyDown(Keys.RightShift) || keyboardState.IsKeyDown(Keys.LeftShift);
         }
 
         private bool IsKeyPress(KeyboardState keyboardState, Keys key)
@@ -467,7 +548,7 @@ namespace Opdozitz
 
             DrawTextCentered(mDisplayTitleFont, string.Format("Spawn In:", mZits.Count, kZitsPerLevel), top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
             top += kTitleHeight;
-            DrawTextCentered(mDisplayFont, mZits.Count <kZitsPerLevel ? string.Format("{0:0.0} sec", zitSpawnRemaining) : "----", top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
+            DrawTextCentered(mDisplayFont, mZits.Count < kZitsPerLevel ? string.Format("{0:0.0} sec", zitSpawnRemaining) : "----", top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
             top += kLineHeight;
 
             DrawTextCentered(mDisplayTitleFont, string.Format("Home:", mZits.Count, kZitsPerLevel), top, kLeftDisplayEdge, kDisplaysWidth, Color.Blue);
