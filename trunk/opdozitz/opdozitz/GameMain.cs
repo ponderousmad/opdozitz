@@ -67,7 +67,7 @@ namespace Opdozitz
 
         private int mSinceLastSpawn = 0;
         private int mSpawnRateFactor = 0;
-        private int? mLevelStartDelay = null;
+        private int mLevelStartDelay = 0;
 
         private KeyboardState mLastKeyboardState = new KeyboardState();
 
@@ -97,6 +97,35 @@ namespace Opdozitz
             base.Initialize();
 
             LoadLevel(kMinLevel);
+        }
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        private void OrderLevels()
+        {
+            List<Level> levels = new List<Level>();
+            for (int i = kMinLevel; i <= kMaxLevel; ++i)
+            {
+                Level level = new Level();
+                level.LoadLevel(i);
+                levels.Add(level);
+            }
+            List<Level> oldOrder = new List<Level>(levels);
+            levels.Sort((System.Comparison<Level>)delegate(Level a, Level b)
+            {
+                if (a.StartDelay != b.StartDelay)
+                {
+                    return a.StartDelay - b.StartDelay;
+                }
+                return oldOrder.IndexOf(a) - oldOrder.IndexOf(b);
+            });
+            for (int i = 0; i < levels.Count; ++i)
+            {
+                Level level = levels[i];
+                if (oldOrder.IndexOf(level) != i)
+                {
+                    StoreLevel(i + 1, level.StartDelay, level.Columns);
+                }
+            }
         }
 
         private static void RunTests()
@@ -140,7 +169,7 @@ namespace Opdozitz
             }
         }
 
-        private System.IO.Stream Load(string location, string resource)
+        private static System.IO.Stream Load(string location, string resource)
         {
 #if DEBUG
             return new System.IO.FileStream(System.IO.Path.Combine(System.IO.Path.Combine(ContentBuildPath, location), resource), System.IO.FileMode.Open, System.IO.FileAccess.Read);
@@ -152,38 +181,59 @@ namespace Opdozitz
         private void LoadLevel(int number)
         {
             mLevel = number;
-            using (System.IO.Stream stream = Load("Levels", LevelName(mLevel)))
-            using (System.IO.TextReader reader = new System.IO.StreamReader(stream))
+            Level level = new Level();
+            level.LoadLevel(number);
+            mLevelStartDelay = level.StartDelay;
+            mColumns = new List<TileColumn>(level.Columns);
+        }
+
+        private class Level
+        {
+            private int mLevelStartDelay = 0;
+            private List<TileColumn> mColumns = new List<TileColumn>();
+
+            public int StartDelay { get { return mLevelStartDelay; } }
+            public IEnumerable<TileColumn> Columns { get { return mColumns; } }
+
+            public void LoadLevel(int number)
             {
-                int columnLocation = ColumnXOffset;
-                mColumns.Clear();
-                mZits.Clear();
-                mLevelStartDelay = null;
-                XDocument doc = System.Xml.Linq.XDocument.Load(reader);
-                XElement root = doc.Elements("Level").First();
-
-                XAttribute levelStartDelay = root.Attribute("startDelay");
-                if (levelStartDelay != null)
+                using (System.IO.Stream stream = Load("Levels", LevelName(number)))
+                using (System.IO.TextReader reader = new System.IO.StreamReader(stream))
                 {
-                    int delay;
-                    if (int.TryParse(levelStartDelay.Value, out delay))
-                    {
-                        mLevelStartDelay = delay;
-                    }
-                }
+                    int columnLocation = ColumnXOffset;
+                    mColumns.Clear();
+                    XDocument doc = System.Xml.Linq.XDocument.Load(reader);
+                    XElement root = doc.Elements("Level").First();
 
-                foreach (XElement e in root.Elements("Column"))
-                {
-                    mColumns.Add(new TileColumn(columnLocation, ColumnVOffset, e.ReadBool("locked", false)));
-                    int tileLocation = ColumnVOffset;
-                    foreach (XElement t in e.Elements("Tile"))
+                    mLevelStartDelay = ReadStartDelay(root);
+
+                    foreach (XElement e in root.Elements("Column"))
                     {
-                        mColumns.Last().Add(new Tile(t.Read<TileParts>("type"), columnLocation, tileLocation));
-                        tileLocation += TileSize;
+                        mColumns.Add(new TileColumn(columnLocation, ColumnVOffset, e.ReadBool("locked", false)));
+                        int tileLocation = ColumnVOffset;
+                        foreach (XElement t in e.Elements("Tile"))
+                        {
+                            mColumns.Last().Add(new Tile(t.Read<TileParts>("type"), columnLocation, tileLocation));
+                            tileLocation += TileSize;
+                        }
+                        columnLocation += TileSize;
                     }
-                    columnLocation += TileSize;
                 }
             }
+        }
+
+        private static int ReadStartDelay(XElement root)
+        {
+            XAttribute levelStartDelay = root.Attribute("startDelay");
+            if (levelStartDelay != null)
+            {
+                int delay;
+                if (int.TryParse(levelStartDelay.Value, out delay))
+                {
+                    return delay;
+                }
+            }
+            return 0;
         }
 
         private static string LevelName(int number)
@@ -193,15 +243,17 @@ namespace Opdozitz
 
         private void StoreLevel()
         {
-            string path = System.IO.Path.Combine(System.IO.Path.Combine(ContentBuildPath, "Levels"), LevelName(mLevel));
+            StoreLevel(mLevel, mLevelStartDelay, mColumns);
+        }
+
+        private static void StoreLevel(int number, int startDelay, IEnumerable<TileColumn> columns)
+        {
+            string path = System.IO.Path.Combine(System.IO.Path.Combine(ContentBuildPath, "Levels"), LevelName(number));
             using (Utils.DocumentWriter writer = new Opdozitz.Utils.DocumentWriter(path))
             using (Utils.IDataWriter root = writer["Level"])
             {
-                if (mLevelStartDelay != null)
-                {
-                    root.Attribute("startDelay", mLevelStartDelay.ToString());
-                }
-                foreach (TileColumn column in mColumns)
+                root.Attribute("startDelay", startDelay.ToString());
+                foreach (TileColumn column in columns)
                 {
                     column.Store(root);
                 }
@@ -245,9 +297,9 @@ namespace Opdozitz
 
         private double ZitSpawnInterval()
         {
-            if (mZits.Count == 0 && mLevelStartDelay != null)
+            if (mZits.Count == 0 && mLevelStartDelay > 0)
             {
-                return mLevelStartDelay.Value;
+                return mLevelStartDelay;
             }
             return Math.Max(kMinSpawnInterval, Math.Pow(kLevelSpawnFactor, mLevel - 1) * kBaseSpawnInterval * Math.Pow(kSpawnRateFactorRatio, mSpawnRateFactor));
         }
@@ -479,26 +531,12 @@ namespace Opdozitz
             }
             else if (IsKeyPress(keyboardState, Keys.OemPeriod))
             {
-                if (mLevelStartDelay == null)
-                {
-                    mLevelStartDelay = kLevelDelayIncrement;
-                }
-                else
-                {
-                    mLevelStartDelay += kLevelDelayIncrement;
-                }
+                mLevelStartDelay += kLevelDelayIncrement;
                 mEdited = true;
             }
             else if (IsKeyPress(keyboardState, Keys.OemComma))
             {
-                if (mLevelStartDelay != null)
-                {
-                    mLevelStartDelay -= kLevelDelayIncrement;
-                    if (mLevelStartDelay.Value <= 0)
-                    {
-                        mLevelStartDelay = null;
-                    }
-                }
+                mLevelStartDelay = Math.Max(0, mLevelStartDelay - kLevelDelayIncrement);
                 mEdited = true;
             }
         }

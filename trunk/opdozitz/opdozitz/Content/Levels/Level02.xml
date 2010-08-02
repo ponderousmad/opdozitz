@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Level startDelay="5000">
+<Level startDelay="5500">
   <Column locked="True">
     <Tile type="Flat, Block" />
     <Tile type="Flat, Start" />
@@ -21,169 +21,17 @@
     <Tile type="Empty" />
     <Tile type="Empty" />
     <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
     <Tile type="Empty" />
     <Tile type="Empty" />
     <Tile type="Empty" />
     <Tile type="SlantUp" />
     <Tile type="Empty" />
-    <Tile type="Flat" />
+    <Tile type="Empty" />
   </Column>
   <Column>
     <Tile type="Empty" />
     <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="SlantUp" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="SlantUp" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="SlantUp" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Empty" />
-    <Tile type="Flat" />
-  </Column>
-  <Column>
-    <Tile type="Empty" />
+    <Tile type="SlantDown" />
     <Tile type="Empty" />
     <Tile type="Empty" />
     <Tile type="Empty" />
@@ -193,8 +41,160 @@
     <Tile type="Empty" />
     <Tile type="Empty" />
     <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp, SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
     <Tile type="Empty" />
     <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="SlantDown" />
+    <Tile type="Empty" />
+    <Tile type="SlantUp" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+  </Column>
+  <Column>
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Flat" />
+    <Tile type="Flat" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
+    <Tile type="Empty" />
   </Column>
   <Column locked="True">
     <Tile type="Block" />
