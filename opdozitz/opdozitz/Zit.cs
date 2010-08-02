@@ -75,154 +75,167 @@ namespace Opdozitz
         internal void Update(GameTime gameTime, IList<TileColumn> columns)
         {
             int elapsed = gameTime.ElapsedGameTime.Milliseconds;
-            float rotation = elapsed * kAngleIncrement * mSpeedFactor;
+            // Empirically determined to elimnate spurrious physics results.
+            const float kMaxAngleStep = 0.1f;
+            float rotationRemaining = elapsed * kAngleIncrement * mSpeedFactor;
 
-            if (IsAlive)
+            while (IsRolling && rotationRemaining > 0)
             {
+                float rotation = rotationRemaining > kMaxAngleStep ? kMaxAngleStep : rotationRemaining;
+                rotationRemaining -= rotation;
+
                 mAngle += rotation;
+
+                UpdateRolling(columns, rotation, gameTime);
+                CheckBoundaries(gameTime);
+                CheckHazards(columns, gameTime);
+                CheckHome(columns);
             }
 
-            if (IsRolling())
+            if (IsFalling)
             {
-                Vector2 support = mLocation - mContact;
-                double supportAngle = Math.Atan2(support.Y, support.X);
-                double newAngle = supportAngle + rotation;
-
-                Vector2 swungLocation = mContact + kRadius * new Vector2((float)Math.Cos(newAngle), (float)Math.Sin(newAngle));
-
-                float left = Math.Min(mLocation.X, swungLocation.X) - kRadius;
-                float right = Math.Max(mLocation.X, swungLocation.X) + kRadius;
-
-                LineSegment closestPlatform = null;
-                Vector2 newContact = mContact;
-                bool closestAtEnd = false;
-                const float kDistanceCheckFudge = 1.1f;
-                float minDistanceSquared = kRadius * kRadius * kDistanceCheckFudge;
-                foreach (Tile tile in TilesInCurrentColumns(columns, left, right))
-                {
-                    foreach (LineSegment platform in tile.Platforms)
-                    {
-                        bool atEnd;
-                        Vector2 currentClosest = platform.ClosestPoint(swungLocation, out atEnd);
-                        float distanceSquared = Vector2.DistanceSquared(currentClosest, swungLocation);
-                        if (distanceSquared < minDistanceSquared)
-                        {
-                            closestAtEnd = atEnd;
-                            closestPlatform = platform;
-                            minDistanceSquared = distanceSquared;
-                            newContact = currentClosest;
-                        }
-                    }
-                }
-
-                if (closestPlatform != null)
-                {
-                    mContact = newContact;
-                    if (closestAtEnd)
-                    {
-                        Vector2 normal = swungLocation - mContact;
-                        normal.Normalize();
-
-                        double angle = Math.Acos(Vector2.Dot(closestPlatform.DirectedNormal, normal));
-                        if (normal.Y > 0 && angle > (Math.PI * 0.9 / 2))
-                        {
-                            Fall();
-                        }
-                        else
-                        {
-                            mLocation = mContact + normal * kRadius;
-                        }
-                    }
-                    else
-                    {
-                        mLocation = mContact + closestPlatform.DirectedNormal * kRadius;
-                    }
-                }
-                else
-                {
-                    mLocation = swungLocation;
-                    Fall();
-                }
-            }
-            else if (mState == ZitState.Falling)
-            {
-                mFallSpeed += elapsed * kFallForce;
-
-                Vector2 fallLocation = new Vector2(mLocation.X, mLocation.Y + mFallSpeed);
-                LineSegment closestPlatform = null;
-                Vector2 newContact = Vector2.Zero;
-                if (mFallSpeed < kFatalVelocity)
-                {
-                    float highestIntersection = fallLocation.Y;
-                    foreach (Tile tile in TilesInCurrentColumns(columns))
-                    {
-                        foreach (LineSegment platform in tile.Platforms)
-                        {
-                            Vector2 offsetVector = -platform.DirectedNormal * kRadius;
-                            Vector2 offsetPoint = fallLocation + offsetVector;
-                            Vector2 contact;
-                            if (platform.FindIntersection(new LineSegment(offsetPoint.X, offsetPoint.Y, offsetPoint.X, offsetPoint.Y - kSize), out contact))
-                            {
-                                Vector2 landLocation = contact - offsetVector;
-                                if (mLocation.Y < landLocation.Y && landLocation.Y < highestIntersection)
-                                {
-                                    closestPlatform = platform;
-                                    newContact = contact;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (closestPlatform != null)
-                {
-                    mFallSpeed = 0;
-                    mContact = newContact;
-                    mLocation = mContact + kRadius * closestPlatform.DirectedNormal;
-                    mState = ZitState.Rolling;
-                    sLandSound.Play();
-                }
-                else
-                {
-                    mLocation = fallLocation;
-                }
+                mAngle += rotationRemaining;
+                UpdateFalling(columns, elapsed);
+                CheckBoundaries(gameTime);
             }
 
-            if (IsAlive)
-            {
-                if (mLocation.Y < (GameMain.FrameTop + kRadius))
-                {
-                    mLocation.Y = GameMain.FrameTop + kRadius;
-                    Die(gameTime);
-                }
-                else if (mLocation.Y > (GameMain.FrameBottom - kRadius))
-                {
-                    mLocation.Y = GameMain.FrameBottom - kRadius;
-                    Die(gameTime);
-                }
-                else if (mLocation.X < (GameMain.FrameLeft + kRadius) || GameMain.FrameRight < mLocation.X)
-                {
-                    Die(gameTime);
-                }
-                else if (mState != ZitState.Falling)
-                {
-                    foreach (Tile tile in TilesInCurrentColumns(columns))
-                    {
-                        foreach (Rectangle hazard in tile.Hazards)
-                        {
-                            if (InHazard(hazard))
-                            {
-                                Die(gameTime);
-                            }
-                        }
-                    }
-                }
-            }
-            else if (mExploding != null && mExploding.Update(gameTime))
+            if (mExploding != null && mExploding.Update(gameTime))
             {
                 mExploding = null;
             }
+        }
 
-            if (mState == ZitState.Rolling)
+        private void UpdateRolling(IList<TileColumn> columns, float rotation, GameTime gameTime)
+        {
+            Vector2 support = mLocation - mContact;
+            double supportAngle = Math.Atan2(support.Y, support.X);
+            double newAngle = supportAngle + rotation;
+
+            Vector2 swungLocation = mContact + kRadius * new Vector2((float)Math.Cos(newAngle), (float)Math.Sin(newAngle));
+
+            float left = Math.Min(mLocation.X, swungLocation.X) - kRadius;
+            float right = Math.Max(mLocation.X, swungLocation.X) + kRadius;
+
+            LineSegment closestPlatform = null;
+            Vector2 newContact = mContact;
+            Tile closestTile = null;
+            bool closestAtEnd = false;
+            const float kDistanceCheckFudge = 1.01f;
+            float minDistanceSquared = kRadius * kRadius * kDistanceCheckFudge;
+            foreach (Tile tile in TilesInCurrentColumns(columns, left, right))
+            {
+                foreach (LineSegment platform in tile.Platforms)
+                {
+                    bool atEnd;
+                    Vector2 currentClosest = platform.ClosestPoint(swungLocation, out atEnd);
+                    float distanceSquared = Vector2.DistanceSquared(currentClosest, swungLocation);
+                    if (distanceSquared < minDistanceSquared)
+                    {
+                        closestAtEnd = atEnd;
+                        closestPlatform = platform;
+                        minDistanceSquared = distanceSquared;
+                        newContact = currentClosest;
+                        closestTile = tile;
+                    }
+                }
+            }
+
+            if (closestPlatform != null)
+            {
+                mContact = newContact;
+                const float kDieRadius = kRadius / 2;
+                if (minDistanceSquared < kDieRadius * kDieRadius)
+                {
+                    Die(gameTime);
+                }
+                else if (closestAtEnd)
+                {
+                    Vector2 normal = swungLocation - mContact;
+                    normal.Normalize();
+
+                    const double kFallAngle = Math.PI * 0.4;
+                    double angle = NormalAngle(closestPlatform.DirectedNormal, normal);
+                    if (normal.Y > 0 && angle > kFallAngle)
+                    {
+                        mLocation = swungLocation;
+                        Fall();
+                    }
+                    else
+                    {
+                        mLocation = mContact + normal * kRadius;
+                    }
+                }
+                else
+                {
+                    mLocation = mContact + closestPlatform.DirectedNormal * kRadius;
+                }
+            }
+            else
+            {
+                mLocation = swungLocation;
+                Fall();
+            }
+        }
+
+        /// <summary>
+        /// Calculate the angle between to already normalized vectors.
+        /// </summary>
+        /// <remarks>Does not check if the vectors are normalized.</remarks>
+        private static double NormalAngle(Vector2 n1, Vector2 n2)
+        {
+            return Math.Acos(Math.Min(1, Vector2.Dot(n1, n2)));
+        }
+
+        private void UpdateFalling(IList<TileColumn> columns, int elapsed)
+        {
+            mFallSpeed += elapsed * kFallForce;
+
+            Vector2 fallLocation = new Vector2(mLocation.X, mLocation.Y + mFallSpeed);
+            LineSegment closestPlatform = null;
+            Vector2 newContact = Vector2.Zero;
+            if (mFallSpeed < kFatalVelocity)
+            {
+                float highestIntersection = fallLocation.Y;
+                foreach (Tile tile in TilesInCurrentColumns(columns))
+                {
+                    foreach (LineSegment platform in tile.Platforms)
+                    {
+                        if (IsCeiling(platform.DirectedNormal))
+                        {
+                            continue;
+                        }
+                        Vector2 offsetVector = -platform.DirectedNormal * kRadius;
+                        Vector2 offsetPoint = fallLocation + offsetVector;
+                        Vector2 contact;
+                        if (platform.FindIntersection(new LineSegment(offsetPoint.X, offsetPoint.Y, offsetPoint.X, offsetPoint.Y - kSize), out contact))
+                        {
+                            Vector2 landLocation = contact - offsetVector;
+                            if (mLocation.Y < landLocation.Y && landLocation.Y < highestIntersection)
+                            {
+                                closestPlatform = platform;
+                                newContact = contact;
+                            }
+                        }
+                    }
+                }
+            }
+            if (closestPlatform != null)
+            {
+                mFallSpeed = 0;
+                mContact = newContact;
+                mLocation = mContact + kRadius * closestPlatform.DirectedNormal;
+                mState = ZitState.Rolling;
+                sLandSound.Play();
+            }
+            else
+            {
+                mLocation = fallLocation;
+            }
+        }
+
+        private void CheckHome(IList<TileColumn> columns)
+        {
+            if (IsRolling)
             {
                 foreach (Tile tile in TilesInCurrentColumns(columns))
                 {
@@ -235,6 +248,43 @@ namespace Opdozitz
                     }
                 }
             }
+        }
+
+        private void CheckBoundaries(GameTime gameTime)
+        {
+            if (mLocation.Y < (GameMain.FrameTop + kRadius))
+            {
+                mLocation.Y = GameMain.FrameTop + kRadius;
+                Die(gameTime);
+            }
+            else if (mLocation.Y > (GameMain.FrameBottom - kRadius))
+            {
+                mLocation.Y = GameMain.FrameBottom - kRadius;
+                Die(gameTime);
+            }
+            else if (mLocation.X < (GameMain.FrameLeft + kRadius) || GameMain.FrameRight < mLocation.X)
+            {
+                Die(gameTime);
+            }
+        }
+
+        private void CheckHazards(IList<TileColumn> columns, GameTime gameTime)
+        {
+            foreach (Tile tile in TilesInCurrentColumns(columns))
+            {
+                foreach (Rectangle hazard in tile.Hazards)
+                {
+                    if (InHazard(hazard))
+                    {
+                        Die(gameTime);
+                    }
+                }
+            }
+        }
+
+        private static bool IsCeiling(Vector2 directedNormal)
+        {
+            return NormalAngle(directedNormal, -Vector2.UnitY) > (Math.PI / 2);
         }
 
         private bool InHazard(Rectangle hazard)
@@ -294,14 +344,9 @@ namespace Opdozitz
             return (column.Left <= x && x <= column.Right);
         }
 
-        private bool IsRolling()
-        {
-            return mState == ZitState.Rolling;
-        }
-
         private void Fall()
         {
-            if (mState != ZitState.Falling)
+            if (!IsFalling)
             {
                 mState = ZitState.Falling;
             }
@@ -319,7 +364,7 @@ namespace Opdozitz
 
         private void MarkHome()
         {
-            if (mState != ZitState.Home)
+            if (!IsHome)
             {
                 mState = ZitState.Home;
                 sHomeSound.Play();
@@ -338,9 +383,19 @@ namespace Opdozitz
             }
         }
 
+        private bool IsRolling
+        {
+            get { return mState == ZitState.Rolling; }
+        }
+
+        private bool IsFalling
+        {
+            get { return mState == ZitState.Falling; }
+        }
+
         public bool IsAlive
         {
-            get { return mState == ZitState.Rolling || mState == ZitState.Falling; }
+            get { return IsRolling || IsFalling; }
         }
 
         internal bool IsHome
