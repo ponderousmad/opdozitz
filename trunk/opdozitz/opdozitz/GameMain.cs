@@ -221,6 +221,15 @@ namespace Opdozitz
             StartLevel(gameTime);
         }
 
+        private void ResetLevel(GameTime gameTime, bool reloadTiles)
+        {
+            if (reloadTiles)
+            {
+                LoadLevel(mLevel);
+            }
+            StartLevel(gameTime);
+        }
+
         private void CheckSpawn(GameTime gameTime, bool fastSpawn)
         {
             mSinceLastSpawn += gameTime.ElapsedGameTime.Milliseconds;
@@ -277,7 +286,7 @@ namespace Opdozitz
             {
                 if (!mEditing)
                 {
-                    StartLevel(mLevel, gameTime);
+                    ResetLevel(gameTime, !IsShiftDown(keyboardState));
                 }
                 if (mEditing && mEdited)
                 {
@@ -354,11 +363,7 @@ namespace Opdozitz
 
             if (IsKeyPress(keyboardState, Keys.Escape))
             {
-                if (!IsShiftDown(keyboardState))
-                {
-                    LoadLevel(mLevel);
-                }
-                StartLevel(gameTime);
+                ResetLevel(gameTime, !IsShiftDown(keyboardState));
             }
 
             int reps = 1;
