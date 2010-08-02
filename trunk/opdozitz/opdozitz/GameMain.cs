@@ -269,6 +269,10 @@ namespace Opdozitz
 
         private void StartLevel(int level, GameTime gameTime)
         {
+            if (level != mLevel)
+            {
+                mSelectedColumn = 1;
+            }
             LoadLevel(level);
             StartLevel(gameTime);
         }
