@@ -34,7 +34,7 @@ namespace Opdozitz
 
         private const int kSize = 20;
         private const float kRadius = kSize / 2f;
-        private const float kAngleIncrement = 0.004f;
+        private const float kAngleIncrement = 0.006f;
         private const float kFallForce = 0.03f;
         private const float kFatalVelocity = 9;
         private const int kExplosionTimePerFrame = 80;
@@ -84,7 +84,7 @@ namespace Opdozitz
         {
             int elapsed = gameTime.ElapsedGameTime.Milliseconds;
             // Empirically determined to elimnate spurrious physics results.
-            const float kMaxAngleStep = 0.1f;
+            const float kMaxAngleStep = 0.2f;
             float rotationRemaining = elapsed * kAngleIncrement * mSpeedFactor;
 
             while (IsRolling && rotationRemaining > 0)

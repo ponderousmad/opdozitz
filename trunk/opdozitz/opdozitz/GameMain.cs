@@ -31,10 +31,10 @@ namespace Opdozitz
         public const int FrameLeft = 25;
         public const int FrameRight = 775;
 
-        private const double kBaseSpawnInterval = 5000;
+        private const double kBaseSpawnInterval = 3000;
         private const double kMinSpawnInterval = 400;
-        private const double kLevelSpawnFactor = 0.95;
-        private const float kLevelSpeedFactor = 0.2f;
+        private const double kLevelSpawnFactor = 0.97;
+        private const float kLevelSpeedFactor = 0.05f;
         private const double kSpawnRateFactorRatio = 0.8;
         private const int kMaxSpawnRateFactor = 10;
         private const int kLevelDelayIncrement = 500;
@@ -53,6 +53,7 @@ namespace Opdozitz
         private Texture2D mSelectColumn;
         private Texture2D mSelectColumnStuck;
         private Texture2D mSelectTile;
+        private Texture2D mInstructions;
 
         private SpriteFont mDisplayFont;
         private SpriteFont mDisplayTitleFont;
@@ -61,9 +62,11 @@ namespace Opdozitz
         private int mSelectedColumn = 1;
         private int mSelectedTile = 0;
         private int mLevel = 0;
-        private int mScore = 0;
+        private List<int> mLevelScores = new List<int>();
         private bool mEditing = false;
         private bool mEdited = false;
+        private bool mInstructionsVisible = true;
+        private bool mZoom = false;
 
         private bool mColumnsMoveZits = true;
 
@@ -82,6 +85,11 @@ namespace Opdozitz
         {
             mGraphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            for (int i = 0; i <= kMaxLevel; ++i)
+            {
+                mLevelScores.Add(0);
+            }
         }
 
         /// <summary>
@@ -147,6 +155,7 @@ namespace Opdozitz
             Tile.LoadContent(Content);
             mBackground = Content.Load<Texture2D>("Images/Background");
             mFrame = Content.Load<Texture2D>("Images/Frame");
+            mInstructions = Content.Load<Texture2D>("Images/Instructions");
             mSelectColumn = Content.Load<Texture2D>("Images/SelectColumn");
             mSelectColumnStuck = Content.Load<Texture2D>("Images/SelectColumnStuck");
             mSelectTile = Content.Load<Texture2D>("Images/SelectTile");
@@ -267,6 +276,7 @@ namespace Opdozitz
             mZits.Clear();
             mSinceLastSpawn = 0;
             mSpawnRateFactor = 0;
+            mZoom = false;
         }
 
         private void StartLevel(int level, GameTime gameTime)
@@ -288,13 +298,13 @@ namespace Opdozitz
             StartLevel(gameTime);
         }
 
-        private void CheckSpawn(GameTime gameTime, bool fastSpawn)
+        private void CheckSpawn(GameTime gameTime)
         {
             mSinceLastSpawn += gameTime.ElapsedGameTime.Milliseconds;
 
             if (mZits.Count < kZitsPerLevel)
             {
-                if (mSinceLastSpawn > (fastSpawn ? kMinSpawnInterval : ZitSpawnInterval()))
+                if (mSinceLastSpawn > (mZoom ? kMinSpawnInterval : ZitSpawnInterval()))
                 {
                     SpawnZit();
                 }
@@ -338,29 +348,39 @@ namespace Opdozitz
 
             KeyboardState keyboardState = Keyboard.GetState();
 
-            UpdateSelectedColumn(keyboardState);
-
-            if (IsKeyPress(keyboardState, Keys.E) && IsControlDown(keyboardState))
+            if (mInstructionsVisible)
             {
-                if (!mEditing)
+                if (keyboardState.GetPressedKeys().Length != 0)
                 {
-                    ResetLevel(gameTime, !IsShiftDown(keyboardState));
+                    mInstructionsVisible = false;
                 }
-                if (mEditing && mEdited)
-                {
-                    mEdited = false;
-                    StoreLevel();
-                }
-                mEditing = !mEditing;
-            }
-
-            if (mEditing)
-            {
-                UpdateEdit(keyboardState);
             }
             else
             {
-                UpdateGameplay(gameTime, keyboardState);
+                UpdateSelectedColumn(keyboardState);
+
+                if (IsKeyPress(keyboardState, Keys.E) && IsControlDown(keyboardState))
+                {
+                    if (!mEditing)
+                    {
+                        ResetLevel(gameTime, !IsShiftDown(keyboardState));
+                    }
+                    if (mEditing && mEdited)
+                    {
+                        mEdited = false;
+                        StoreLevel();
+                    }
+                    mEditing = !mEditing;
+                }
+
+                if (mEditing)
+                {
+                    UpdateEdit(keyboardState);
+                }
+                else
+                {
+                    UpdateGameplay(gameTime, keyboardState);
+                }
             }
 
             mLastKeyboardState = keyboardState;
@@ -410,52 +430,39 @@ namespace Opdozitz
                 }
             }
 
-            if (IsKeyPress(keyboardState, Keys.OemPeriod))
-            {
-                mSpawnRateFactor = Math.Min(kMaxSpawnRateFactor, mSpawnRateFactor + 1);
-            }
-            else if (IsKeyPress(keyboardState, Keys.OemComma))
-            {
-                mSpawnRateFactor = Math.Max(0, mSpawnRateFactor - 1);
-            }
-
+#if DEBUG
             if (IsKeyPress(keyboardState, Keys.Escape))
             {
                 ResetLevel(gameTime, !IsShiftDown(keyboardState));
             }
-
-            int reps = 1;
-            if (IsShiftDown(keyboardState))
+#endif
+            
+            if(IsKeyPress(keyboardState, Keys.Space))
             {
-                reps = 4;
+                mZoom = !mZoom;
             }
-
-            for (; reps > 0; --reps)
+            for (int reps = mZoom ? 4 : 1; reps > 0; --reps)
             {
-                CheckSpawn(gameTime, keyboardState.IsKeyDown(Keys.Tab));
+                CheckSpawn(gameTime);
 
                 TileColumn[] columns = (mColumnsMoveZits ? mColumns : mColumns.Where(c => !c.Moving)).ToArray();
 
                 foreach (Zit zit in mZits)
                 {
                     zit.Update(gameTime, columns);
-                    if ((IsKeyPress(keyboardState, Keys.Space) && !IsShiftDown(keyboardState)) && zit.IsAlive && zit.InColumn(CurrentColumn))
-                    {
-                        zit.Die(gameTime);
-                    }
                 }
+            }
 
-                foreach (TileColumn column in mColumns)
+            foreach (TileColumn column in mColumns)
+            {
+                int delta = column.Update(gameTime);
+                if (mColumnsMoveZits && delta != 0)
                 {
-                    int delta = column.Update(gameTime);
-                    if (mColumnsMoveZits && delta != 0)
+                    foreach (Zit zit in mZits)
                     {
-                        foreach (Zit zit in mZits)
+                        if (zit.ContactTile != null && zit.ContactTile.Left == column.Left)
                         {
-                            if (zit.ContactTile != null && zit.ContactTile.Left == column.Left)
-                            {
-                                zit.ShiftBy(delta);
-                            }
+                            zit.ShiftBy(delta);
                         }
                     }
                 }
@@ -466,7 +473,7 @@ namespace Opdozitz
             {
                 if (success)
                 {
-                    mScore += ZitHomeCount();
+                    mLevelScores[mLevel] = Math.Max(ZitHomeCount(), mLevelScores[mLevel]);
                 }
                 StartLevel(mLevel + 1, gameTime);
             }
@@ -683,13 +690,23 @@ namespace Opdozitz
             top = kRightDisplayTop;
             DrawTextCentered(mDisplayTitleFont, string.Format("Score:", mZits.Count, kZitsPerLevel), top, kRightDisplayEdge, kDisplaysWidth, Color.Blue);
             top += kTitleHeight;
-            DrawTextCentered(mScoreFont, (mScore + ZitHomeCount()).ToString(), top, kRightDisplayEdge, kDisplaysWidth, Color.Blue);
+            DrawTextCentered(mScoreFont, CurrentScore().ToString(), top, kRightDisplayEdge, kDisplaysWidth, Color.Blue);
             top += kScoreHeight;
             DrawTextCentered(mDisplayFont, string.Format("Level {0}", mLevel), top, kRightDisplayEdge, kDisplaysWidth, Color.Blue);
+
+            if (mInstructionsVisible)
+            {
+                mSpriteBatch.Draw(mInstructions, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
+            }
 
             mSpriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private int CurrentScore()
+        {
+            return mLevelScores.Sum() - mLevelScores[mLevel] + ZitHomeCount();
         }
 
         private void DrawTextCentered(SpriteFont font, string text, int top, int left, int width, Color color)
