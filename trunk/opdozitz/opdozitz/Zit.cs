@@ -48,9 +48,16 @@ namespace Opdozitz
         private float mFallSpeed = 0;
         private Flipbook.Playback mExploding = null;
 
+        private Tile mCurrentTile = null;
+
         public static int Size
         {
             get { return kSize; }
+        }
+
+        public Tile ContactTile
+        {
+            get { return mCurrentTile; }
         }
 
         public static void LoadContent(ContentManager content)
@@ -69,10 +76,11 @@ namespace Opdozitz
             LineSegment platform = tile.Platforms.First();
             mContact = platform.Start + platform.Direction * kRadius;
             mLocation = mContact + platform.DirectedNormal * kRadius;
+            mCurrentTile = tile;
             sSpawnSound.Play();
         }
 
-        internal void Update(GameTime gameTime, IList<TileColumn> columns)
+        internal void Update(GameTime gameTime, TileColumn[] columns)
         {
             int elapsed = gameTime.ElapsedGameTime.Milliseconds;
             // Empirically determined to elimnate spurrious physics results.
@@ -169,6 +177,7 @@ namespace Opdozitz
                 {
                     mLocation = mContact + closestPlatform.DirectedNormal * kRadius;
                 }
+                mCurrentTile = closestTile;
             }
             else
             {
@@ -193,6 +202,7 @@ namespace Opdozitz
             Vector2 fallLocation = new Vector2(mLocation.X, mLocation.Y + mFallSpeed);
             LineSegment closestPlatform = null;
             Vector2 newContact = Vector2.Zero;
+            Tile contactTile = null;
             if (mFallSpeed < kFatalVelocity)
             {
                 float highestIntersection = fallLocation.Y;
@@ -214,6 +224,7 @@ namespace Opdozitz
                             {
                                 closestPlatform = platform;
                                 newContact = contact;
+                                contactTile = tile;
                             }
                         }
                     }
@@ -224,6 +235,7 @@ namespace Opdozitz
                 mFallSpeed = 0;
                 mContact = newContact;
                 mLocation = mContact + kRadius * closestPlatform.DirectedNormal;
+                mCurrentTile = contactTile;
                 mState = ZitState.Rolling;
                 sLandSound.Play();
             }
@@ -326,14 +338,11 @@ namespace Opdozitz
         {
             foreach (TileColumn column in columns)
             {
-                if (!column.Moving)
+                if (column.InColumn(left) || column.InColumn(right))
                 {
-                    if (column.InColumn(left) || column.InColumn(right))
+                    foreach (Tile tile in column.Tiles)
                     {
-                        foreach (Tile tile in column.Tiles)
-                        {
-                            yield return tile;
-                        }
+                        yield return tile;
                     }
                 }
             }
@@ -348,6 +357,7 @@ namespace Opdozitz
         {
             if (!IsFalling)
             {
+                mCurrentTile = null;
                 mState = ZitState.Falling;
             }
         }
@@ -406,6 +416,15 @@ namespace Opdozitz
         internal bool InColumn(TileColumn column)
         {
             return column.InColumn(mLocation.X);
+        }
+
+        internal void ShiftBy(int delta)
+        {
+            if (IsRolling)
+            {
+                mLocation.Y += delta;
+                mContact.Y += delta;
+            }
         }
     }
 }

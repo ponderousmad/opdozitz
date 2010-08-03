@@ -65,6 +65,8 @@ namespace Opdozitz
         private bool mEditing = false;
         private bool mEdited = false;
 
+        private bool mColumnsMoveZits = true;
+
         private int mSinceLastSpawn = 0;
         private int mSpawnRateFactor = 0;
         private int mLevelStartDelay = 0;
@@ -432,9 +434,11 @@ namespace Opdozitz
             {
                 CheckSpawn(gameTime, keyboardState.IsKeyDown(Keys.Tab));
 
+                TileColumn[] columns = (mColumnsMoveZits ? mColumns : mColumns.Where(c => !c.Moving)).ToArray();
+
                 foreach (Zit zit in mZits)
                 {
-                    zit.Update(gameTime, mColumns);
+                    zit.Update(gameTime, columns);
                     if ((IsKeyPress(keyboardState, Keys.Space) && !IsShiftDown(keyboardState)) && zit.IsAlive && zit.InColumn(CurrentColumn))
                     {
                         zit.Die(gameTime);
@@ -443,7 +447,17 @@ namespace Opdozitz
 
                 foreach (TileColumn column in mColumns)
                 {
-                    column.Update(gameTime);
+                    int delta = column.Update(gameTime);
+                    if (mColumnsMoveZits && delta != 0)
+                    {
+                        foreach (Zit zit in mZits)
+                        {
+                            if (zit.ContactTile != null && zit.ContactTile.Left == column.Left)
+                            {
+                                zit.ShiftBy(delta);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -591,11 +605,14 @@ namespace Opdozitz
             {
                 return false;
             }
-            foreach (Zit zit in mZits)
+            if (!mColumnsMoveZits)
             {
-                if (zit.IsAlive && zit.InColumn(column))
+                foreach (Zit zit in mZits)
                 {
-                    return false;
+                    if (zit.IsAlive && zit.InColumn(column))
+                    {
+                        return false;
+                    }
                 }
             }
             return true;

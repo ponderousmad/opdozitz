@@ -110,20 +110,22 @@ namespace Opdozitz
             mMovingSteps = GameMain.TileSize;
         }
 
-        internal void Update(GameTime gameTime)
+        internal int Update(GameTime gameTime)
         {
+            int delta = 0;
             if (mMovingSteps > 0)
             {
+                if (mMovingUp)
+                {
+                    delta = -kMoveSize;
+                }
+                else
+                {
+                    delta = kMoveSize;
+                }
                 foreach (Tile tile in mTiles)
                 {
-                    if (mMovingUp)
-                    {
-                        tile.Top -= kMoveSize;
-                    }
-                    else
-                    {
-                        tile.Top += kMoveSize;
-                    }
+                    tile.Top += delta;
                 }
                 mMovingSteps -= kMoveSize;
                 if (!Moving)
@@ -131,6 +133,7 @@ namespace Opdozitz
                     mTiles.Remove(mMovingUp ? mTiles.First() : mTiles.Last());
                 }
             }
+            return delta;
         }
 
         internal void Store(Opdozitz.Utils.IDataWriter writer)
