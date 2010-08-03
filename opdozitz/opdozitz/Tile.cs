@@ -198,7 +198,7 @@ namespace Opdozitz
 
         public Tile Clone(int newTop)
         {
-            return new Tile(Parts, mLeft, newTop);
+            return new Tile(Parts, Left, newTop);
         }
 
         private TileParts Parts
@@ -211,7 +211,7 @@ namespace Opdozitz
             foreach (TileParts part in PartsList())
             {
                 Rectangle drawBounds = new Rectangle(
-                    mLeft - GameMain.TileDrawOffset, mTop - GameMain.TileDrawOffset,
+                    Left - GameMain.TileDrawOffset, Top - GameMain.TileDrawOffset,
                     GameMain.TileDrawSize, GameMain.TileDrawSize
                 );
                 batch.Draw(sTileImages[part], drawBounds, Color.White);
