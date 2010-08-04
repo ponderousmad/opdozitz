@@ -96,6 +96,11 @@ namespace Opdozitz
             return Left <= x && x <= Right;
         }
 
+        internal bool InColumn(int x)
+        {
+            return Left <= x && x <= Right;
+        }
+
         internal void MoveUp()
         {
             mMovingUp = true;
