@@ -84,7 +84,7 @@ namespace Opdozitz
         {
             int elapsed = gameTime.ElapsedGameTime.Milliseconds;
             // Empirically determined to elimnate spurrious physics results.
-            const float kMaxAngleStep = 0.2f;
+            const float kMaxAngleStep = 0.7f;
             float rotationRemaining = elapsed * kAngleIncrement * mSpeedFactor;
 
             while (IsRolling && rotationRemaining > 0)
@@ -121,8 +121,10 @@ namespace Opdozitz
 
             Vector2 swungLocation = mContact + kRadius * new Vector2((float)Math.Cos(newAngle), (float)Math.Sin(newAngle));
 
-            float left = Math.Min(mLocation.X, swungLocation.X) - kRadius;
-            float right = Math.Max(mLocation.X, swungLocation.X) + kRadius;
+            int top = (int)Math.Floor(Math.Min(mLocation.Y, swungLocation.Y)) - Size;
+            int bottom = (int)Math.Ceiling(Math.Max(mLocation.Y, swungLocation.Y)) + Size;
+            int left = (int)Math.Floor(Math.Min(mLocation.X, swungLocation.X) - kRadius);
+            int right = (int)Math.Ceiling(Math.Max(mLocation.X, swungLocation.X) + kRadius);
 
             LineSegment closestPlatform = null;
             Vector2 newContact = mContact;
@@ -130,7 +132,7 @@ namespace Opdozitz
             bool closestAtEnd = false;
             const float kDistanceCheckFudge = 1.01f;
             float minDistanceSquared = kRadius * kRadius * kDistanceCheckFudge;
-            foreach (Tile tile in TilesInCurrentColumns(columns, left, right))
+            foreach (Tile tile in TilesInCurrentColumns(columns, left, right, top, bottom))
             {
                 foreach (LineSegment platform in tile.Platforms)
                 {
@@ -331,10 +333,16 @@ namespace Opdozitz
 
         private IEnumerable<Tile> TilesInCurrentColumns(IList<TileColumn> columns)
         {
-            return TilesInCurrentColumns(columns, mLocation.X - kRadius, mLocation.X + kRadius);
+            return TilesInCurrentColumns(
+                columns,
+                (int)Math.Floor(mLocation.X - kRadius),
+                (int)Math.Ceiling(mLocation.X + kRadius),
+                (int)Math.Floor(mLocation.Y - kRadius),
+                (int)Math.Ceiling(mLocation.Y + kRadius + Size)
+            );
         }
 
-        private IEnumerable<Tile> TilesInCurrentColumns(IEnumerable<TileColumn> columns, float left, float right)
+        private IEnumerable<Tile> TilesInCurrentColumns(IEnumerable<TileColumn> columns, int left, int right, int top, int bottom)
         {
             foreach (TileColumn column in columns)
             {
@@ -342,15 +350,18 @@ namespace Opdozitz
                 {
                     foreach (Tile tile in column.Tiles)
                     {
-                        yield return tile;
+                        if (InTile(tile, top) || InTile(tile, bottom))
+                        {
+                            yield return tile;
+                        }
                     }
                 }
             }
         }
 
-        private static bool InColumn(TileColumn column, float x)
+        private static bool InTile(Tile tile, int y)
         {
-            return (column.Left <= x && x <= column.Right);
+            return (tile.Top <= y && y <= tile.Bottom);
         }
 
         private void Fall()
