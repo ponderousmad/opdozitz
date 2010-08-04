@@ -31,6 +31,14 @@ namespace Opdozitz
         public const int FrameLeft = 25;
         public const int FrameRight = 775;
 
+        enum Instruction
+        {
+            Start,
+            LevelPassed,
+            LevelFailed,
+            Congratulations
+        }
+
         private const double kBaseSpawnInterval = 3000;
         private const double kMinSpawnInterval = 400;
         private const double kLevelSpawnFactor = 0.97;
@@ -53,7 +61,7 @@ namespace Opdozitz
         private Texture2D mSelectColumn;
         private Texture2D mSelectColumnStuck;
         private Texture2D mSelectTile;
-        private Texture2D mInstructions;
+        private Dictionary<Instruction, Texture2D> mInstructions = new Dictionary<Instruction, Texture2D>();
 
         private SpriteFont mDisplayFont;
         private SpriteFont mDisplayTitleFont;
@@ -65,7 +73,7 @@ namespace Opdozitz
         private List<int> mLevelScores = new List<int>();
         private bool mEditing = false;
         private bool mEdited = false;
-        private bool mInstructionsVisible = true;
+        private Instruction? mInstruction = Instruction.Start;
         private bool mZoom = false;
 
         private bool mColumnsMoveZits = true;
@@ -155,10 +163,14 @@ namespace Opdozitz
             Tile.LoadContent(Content);
             mBackground = Content.Load<Texture2D>("Images/Background");
             mFrame = Content.Load<Texture2D>("Images/Frame");
-            mInstructions = Content.Load<Texture2D>("Images/Instructions");
             mSelectColumn = Content.Load<Texture2D>("Images/SelectColumn");
             mSelectColumnStuck = Content.Load<Texture2D>("Images/SelectColumnStuck");
             mSelectTile = Content.Load<Texture2D>("Images/SelectTile");
+
+            mInstructions[Instruction.Start] = Content.Load<Texture2D>("Images/Instructions");
+            mInstructions[Instruction.LevelFailed] = Content.Load<Texture2D>("Images/LevelFailedInstruction");
+            mInstructions[Instruction.LevelPassed] = Content.Load<Texture2D>("Images/LevelPassedInstruction");
+            mInstructions[Instruction.Congratulations] = Content.Load<Texture2D>("Images/Congratulations");
 
             mDisplayFont = Content.Load<SpriteFont>("Fonts/Displays");
             mDisplayTitleFont = Content.Load<SpriteFont>("Fonts/DisplaysTitle");
@@ -348,12 +360,9 @@ namespace Opdozitz
 
             KeyboardState keyboardState = Keyboard.GetState();
 
-            if (mInstructionsVisible)
+            if (mInstruction != null)
             {
-                if (keyboardState.GetPressedKeys().Length != 0)
-                {
-                    mInstructionsVisible = false;
-                }
+                keyboardState = UpdateInstruction(gameTime, keyboardState);
             }
             else
             {
@@ -385,6 +394,34 @@ namespace Opdozitz
 
             mLastKeyboardState = keyboardState;
             base.Update(gameTime);
+        }
+
+        private KeyboardState UpdateInstruction(GameTime gameTime, KeyboardState keyboardState)
+        {
+            if (keyboardState.GetPressedKeys().Length != 0)
+            {
+                if (mInstruction != Instruction.Start)
+                {
+                    if (!CheckSwitchLevel(gameTime, keyboardState))
+                    {
+                        if (mInstruction == Instruction.LevelFailed)
+                        {
+                            ResetLevel(gameTime, true);
+                        }
+                        else if (mInstruction == Instruction.LevelPassed)
+                        {
+                            StartLevel(mLevel + 1, gameTime);
+                        }
+                        else if (mInstruction == Instruction.Congratulations)
+                        {
+                            StartLevel(kMinLevel, gameTime);
+                        }
+                    }
+                }
+
+                mInstruction = null;
+            }
+            return keyboardState;
         }
 
         private void UpdateSelectedColumn(KeyboardState keyboardState)
@@ -436,8 +473,8 @@ namespace Opdozitz
                 ResetLevel(gameTime, !IsShiftDown(keyboardState));
             }
 #endif
-            
-            if(IsKeyPress(keyboardState, Keys.Space))
+
+            if (IsKeyPress(keyboardState, Keys.Space))
             {
                 mZoom = !mZoom;
             }
@@ -468,24 +505,35 @@ namespace Opdozitz
                 }
             }
 
-            bool success = LevelSuccessful();
-            if (mLevel < kMaxLevel && (IsKeyPress(keyboardState, Keys.N) || success))
+            if (LevelDone())
             {
-                if (success)
+                if(ZitHomeCount() >= (kZitsPerLevel / 2))
                 {
                     mLevelScores[mLevel] = Math.Max(ZitHomeCount(), mLevelScores[mLevel]);
+                    mInstruction = mLevel == kMaxLevel ? Instruction.Congratulations : Instruction.LevelPassed;
                 }
-                StartLevel(mLevel + 1, gameTime);
+                else
+                {
+                    mInstruction = Instruction.LevelFailed;
+                }
             }
-            if (mLevel > 1 && IsKeyPress(keyboardState, Keys.P))
-            {
-                StartLevel(mLevel - 1, gameTime);
-            }
+
+            CheckSwitchLevel(gameTime, keyboardState);
         }
 
-        private bool LevelSuccessful()
+        private bool CheckSwitchLevel(GameTime gameTime, KeyboardState keyboardState)
         {
-            return (LevelDone() && (ZitHomeCount() >= (kZitsPerLevel / 2)));
+            if (mLevel < kMaxLevel && IsKeyPress(keyboardState, Keys.N))
+            {
+                StartLevel(mLevel + 1, gameTime);
+                return true;
+            }
+            if (mLevel > kMinLevel && IsKeyPress(keyboardState, Keys.P))
+            {
+                StartLevel(mLevel - 1, gameTime);
+                return true;
+            }
+            return false;
         }
 
         private bool LevelDone()
@@ -694,9 +742,9 @@ namespace Opdozitz
             top += kScoreHeight;
             DrawTextCentered(mDisplayFont, string.Format("Level {0}", mLevel), top, kRightDisplayEdge, kDisplaysWidth, Color.Blue);
 
-            if (mInstructionsVisible)
+            if (mInstruction != null)
             {
-                mSpriteBatch.Draw(mInstructions, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
+                mSpriteBatch.Draw(mInstructions[mInstruction.Value], new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
             }
 
             mSpriteBatch.End();
