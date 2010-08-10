@@ -197,7 +197,7 @@ namespace Opdozitz
 #if DEBUG
             return new System.IO.FileStream(System.IO.Path.Combine(System.IO.Path.Combine(ContentBuildPath, location), resource), System.IO.FileMode.Open, System.IO.FileAccess.Read);
 #else
-            return GetType().Assembly.GetManifestResourceStream("Opdozitz.Content." + location + "." + resource);
+            return typeof(GameMain).Assembly.GetManifestResourceStream("Opdozitz.Content." + location + "." + resource);
 #endif
         }
 
@@ -293,10 +293,7 @@ namespace Opdozitz
 
         private void StartLevel(int level, GameTime gameTime)
         {
-            if (level != mLevel)
-            {
-                mSelectedColumn = 1;
-            }
+            mSelectedColumn = 1;
             LoadLevel(level);
             StartLevel(gameTime);
         }
@@ -307,6 +304,7 @@ namespace Opdozitz
             {
                 LoadLevel(mLevel);
             }
+            mSelectedColumn = 1;
             StartLevel(gameTime);
         }
 
@@ -367,12 +365,14 @@ namespace Opdozitz
             else
             {
                 UpdateSelectedColumn(keyboardState);
-
+#if DEBUG
                 if (IsKeyPress(keyboardState, Keys.E) && IsControlDown(keyboardState))
                 {
                     if (!mEditing)
                     {
+                        int oldColumn = mSelectedColumn;
                         ResetLevel(gameTime, !IsShiftDown(keyboardState));
+                        mSelectedColumn = oldColumn;
                     }
                     if (mEditing && mEdited)
                     {
@@ -381,6 +381,7 @@ namespace Opdozitz
                     }
                     mEditing = !mEditing;
                 }
+#endif
 
                 if (mEditing)
                 {
@@ -467,12 +468,14 @@ namespace Opdozitz
                 }
             }
 
-#if DEBUG
             if (IsKeyPress(keyboardState, Keys.Escape))
             {
-                ResetLevel(gameTime, !IsShiftDown(keyboardState));
-            }
+                bool keepTiles = false;
+#if DEBUG
+                keepTiles = IsShiftDown(keyboardState)
 #endif
+                ResetLevel(gameTime, !keepTiles);
+            }
 
             if (IsKeyPress(keyboardState, Keys.Space))
             {
