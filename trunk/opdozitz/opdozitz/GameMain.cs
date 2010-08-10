@@ -472,7 +472,7 @@ namespace Opdozitz
             {
                 bool keepTiles = false;
 #if DEBUG
-                keepTiles = IsShiftDown(keyboardState)
+                keepTiles = IsShiftDown(keyboardState);
 #endif
                 ResetLevel(gameTime, !keepTiles);
             }
