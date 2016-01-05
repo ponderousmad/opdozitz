@@ -1,5 +1,3 @@
-var rootURL = "/scrace/";
-
 var ImageBatch = (function (baseURL) {
     "use strict";
 

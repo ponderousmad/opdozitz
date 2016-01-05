@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -772,3 +773,29 @@ namespace Opdozitz
         }
     }
 }
+*/
+
+(function () {
+    "use strict";
+    
+    window.onload = function(e) {
+        console.log("window.onload", e, Date.now())
+        var canvas = document.getElementById("canvas"),
+            context = canvas.getContext("2d"),
+            imageBatch = new ImageBatch("images/"),
+            frame = imageBatch.load("Frame.png");
+        
+        imageBatch.commit();
+
+        function draw() {
+            requestAnimationFrame(draw);
+            context.fillStyle = "black";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            if(imageBatch.loaded) {
+                context.drawImage(frame, 0, 0);
+            }
+        }
+        
+        draw();
+    };
+}());
