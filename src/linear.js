@@ -77,7 +77,7 @@ var LINEAR = (function () {
     };
 
     linear.pointDistance = function (a, b) {
-        return Math.sqrt(pointDistanceSq(a, b));
+        return Math.sqrt(linear.pointDistanceSq(a, b));
     };
 
     linear.vectorNormalize = function (v) {

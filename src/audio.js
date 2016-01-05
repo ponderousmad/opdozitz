@@ -9,7 +9,7 @@ var SoundEffect = (function (baseURL) {
         console.log(error);
     }
 
-    function SoundEffect (resource) {
+    function SoundEffect(resource) {
         this.resource = resource;
         this._source = null;
         this._buffer = null;
@@ -29,8 +29,7 @@ var SoundEffect = (function (baseURL) {
                     },
                     function (e) {
                         console.log("Error with decoding audio data" + e.err);
-                    }
-                );
+                    });
             };
             request.send();
         }

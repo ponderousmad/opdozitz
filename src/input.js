@@ -1,7 +1,7 @@
-var INPUT = (function () {
+var INPUT = (function (LINEAR) {
     "use strict";
 
-    function KeyboardState (element) {
+    function KeyboardState(element) {
         this.pressed = {};
         var self = this;
         
@@ -14,7 +14,7 @@ var INPUT = (function () {
             e = e || window.event;
             delete self.pressed[e.keyCode];
         };
-    };
+    }
 
     KeyboardState.prototype.isKeyDown = function (keyCode) {
         return this.pressed[keyCode] ? true : false;
@@ -38,8 +38,8 @@ var INPUT = (function () {
         return count;
     };
 
-    function MouseState (element) {
-        this.location = new Vector(0, 0);
+    function MouseState(element) {
+        this.location = new LINEAR.Vector(0, 0);
         this.left = false;
         this.middle = false;
         this.right = false;
@@ -62,10 +62,10 @@ var INPUT = (function () {
         element.addEventListener("mousemove", updateState);
         element.addEventListener("mousedown", updateState);
         element.addEventListener("mouseup", updateState);
-    };
+    }
     
     return {
         KeyboardState: KeyboardState,
         MouseState: MouseState
     };
-}());
+}(LINEAR));
