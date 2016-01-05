@@ -1,4 +1,4 @@
-var LINEAR = (function() {
+var LINEAR = (function () {
     "use strict";
     
     var linear = {};
@@ -103,4 +103,6 @@ var LINEAR = (function() {
         }
         return angle;
     };
+    
+    return linear;
 }());
