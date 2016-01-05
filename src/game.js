@@ -779,7 +779,7 @@ namespace Opdozitz
     "use strict";
     
     window.onload = function(e) {
-        console.log("window.onload", e, Date.now())
+        console.log("window.onload", e, Date.now());
         var canvas = document.getElementById("canvas"),
             context = canvas.getContext("2d"),
             imageBatch = new ImageBatch("images/"),
