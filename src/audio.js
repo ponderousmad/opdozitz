@@ -3,7 +3,8 @@ var SoundEffect = (function (baseURL) {
 
     var gAudioContext = null;
     try {
-        gAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        var Constructor = window.AudioContext || window.webkitAudioContext;
+        gAudioContext = new AudioContextConstructor();
     } catch (error) {
         console.log("Error initializing audio:");
         console.log(error);
@@ -17,7 +18,7 @@ var SoundEffect = (function (baseURL) {
         resource = baseURL + resource;
         var self = this;
         
-        if (gAudioContext != null) {
+        if (gAudioContext !== null) {
             var request = new XMLHttpRequest();
             request.open("GET", resource, true);
             request.responseType = "arraybuffer";
@@ -36,11 +37,11 @@ var SoundEffect = (function (baseURL) {
     }
         
     SoundEffect.prototype.isLoaded = function () {
-        return gAudioContext == null || this._buffer != null;
+        return gAudioContext === null || this._buffer !== null;
     };
 
     SoundEffect.prototype.play = function () {
-        if (gAudioContext == null || this._buffer == null) {
+        if (gAudioContext === null || this._buffer === null) {
             return;
         }
         if (this._source) {
