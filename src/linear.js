@@ -140,18 +140,18 @@ var LINEAR = (function () {
         return Math.acos(v1.dot(v2) / (v1.length() * v2.length()));
     };
 
-    linear.linesIntersectPD = function(start1, d1, start2, d2) {
+    linear.linesIntersectPD = function (start1, d1, start2, d2) {
         if (checkAligned(d1, d2, COLINEAR_TOLERANCE)) {
             return checkAligned(d1, subVectors(start1, start2), COLINEAR_TOLERANCE);
         }
         return true;
     };
     
-    linear.linesIntersectPP = function(start1, end1, start2, end2) {
+    linear.linesIntersectPP = function (start1, end1, start2, end2) {
         return linear.linesIntersectPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2));
     };
     
-    linear.intersectLinesPD = function(start1, d1, start2, d2, intersection) {
+    linear.intersectLinesPD = function (start1, d1, start2, d2, intersection) {
         var between = subVectors(start1, start2),
             denom = determinant(d1, d2);
             
@@ -164,7 +164,7 @@ var LINEAR = (function () {
         return true;
     };
     
-    linear.intersectLinesPP = function(start1, end1, start2, end2, intersection) {
+    linear.intersectLinesPP = function (start1, end1, start2, end2, intersection) {
         return linear.intersectLinesPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection);
     };
     
@@ -183,7 +183,7 @@ var LINEAR = (function () {
         return false;
     };
     
-    linear.segmentsIntersectPDT = function(start1, d1, start2, d2, tolerance) {
+    linear.segmentsIntersectPDT = function (start1, d1, start2, d2, tolerance) {
         var between = subVectors(start1, start2);
         var denom = determinant(d1, d2);
 
@@ -201,11 +201,15 @@ var LINEAR = (function () {
                inSegment(determinant(d2, between) / denom);
     };
     
-    linear.segmentsIntersectPD = function(start1, d1, start2, d2) {
+    linear.segmentsIntersectPD = function (start1, d1, start2, d2) {
         return linear.segmentsIntersectPDT(start1, d1, start2, d2, COLINEAR_TOLERANCE);
     };
     
-    linear.segmentsIntersectPP = function(start1, end1, start2, end2) {
+    linear.segmentsIntersectPPT = function (start1, end1, start2, end2, tolerance) {
+        return linear.segmentsIntersectPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), tolerance);
+    };
+    
+    linear.segmentsIntersectPP = function (start1, end1, start2, end2) {
         return linear.segmentsIntersectPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), COLINEAR_TOLERANCE);
     };
     
@@ -247,9 +251,110 @@ var LINEAR = (function () {
         return linear.intersectSegmentsPDT(start1, d1, start2, d2, intersection, COLINEAR_TOLERANCE);
     };
     
-    linear.intersectSegmentsPP = function(start1, end1, start2, end2) {
+    linear.intersectSegmentsPPT = function (start1, end1, start2, end2, tolerance) {
+        return linear.intersectSegmentsPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection, tolerance);
+    };
+    
+    linear.intersectSegmentsPP = function (start1, end1, start2, end2) {
         return linear.intersectSegmentsPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection, COLINEAR_TOLERANCE);
     };
+    
+    function Segment(start, end) {
+        this.start = start;
+        this.end = end;
+    }
+    
+    Segment.prototype.direction = function () {
+        var dir = subVectors(end, start);
+        dir.normalize();
+        return dir;
+    };
+    
+    Segment.prototype.normal = function () {
+        var dir = this.direction();
+        dir.set(-dir.y, dir.x);
+    };
+    
+    Segment.prototype.directedNormal = function () {
+        var normal = this.normal();
+        if (determinant(dir, normal) >= 0) {
+            normal.scale(-1);
+        }
+        return normal;
+    };
+    
+    Segment.prototype.length = function () {
+        return linear.pointDistance(end, start);
+    };
+    
+    Segment.prototype.intersects = function(other) {
+        return linear.segmentsIntersectPP(start, end, other.start, other.end);
+    };
+    
+    Segment.prototype.intersectsT = function(other, tolerance) {
+        return linear.segmentsIntersectPPT(start, end, other.start, other.end, tolerance);
+    };
+    
+    Segment.prototype.findIntersection = function(other, intersection) {
+        return linear.intersectSegmentsPP(start, end, other.start, other.end, intersection);
+    };
+    
+    Segment.prototype.findIntersectionT = function(other, tolerance, intersection) {
+        return linear.intersectSegmentsPPT(start, end, other.start, other.end, tolerance, intersection);
+    };
+    
+    Segment.prototype.extendAtStart = function (length) {
+        var start = this.start.clone();
+        start.addScaled(this.direction(), -length);
+        return new Segment(start, this.end);
+    };
+    
+    Segment.prototype.extendAtEnd = function (length) {
+        var end = this.end.clone();
+        end.addScaled(this.direction(), length);
+        return new Segment(this.start, end);
+    };
+
+    Segment.prototype.extendBoth = function (length) {
+        var start = this.start.clone(),
+            end = this.end.clone(),
+            dir = this.direction();
+        start.addScaled(dir, -length);
+        end.addScaled(dir, length);
+        return new Segment(start, end);
+    };
+
+    Segment.prototype.shift = function (offset) {
+        var start = this.start.clone(),
+            end = this.end.clone();
+        start.add(offset);
+        end.add(offset);
+        return new Segment(start, end);
+    };
+    
+    Segment.prototype.closestPoint = function (center) {
+        var closest = new Vector(0,0),
+            normal = this.normal(),
+            dir = this.direction();
+        if (!linear.linesIntersectPD(this.start, dir, center, normal, closest)) {
+            // Degenerate line segment.
+            return { point: this.start, atEnd: true };
+        }
+        // Is the closest point inside the line segment?
+        var fromStart = linear.subVectors(closest, this.start),
+            fromEnd = linear.subVectors(closest, this.end);
+        if (fromStart.dot(dir) >= 0 && fromEnd.dot(-dir) >= 0) {
+            return { point: closest, atEnd: false };
+        }
+        atEnd = true;
+        if (linear.pointDistanceSq(center, this.start) < linear.pointDistanceSq(center, this.end)) {
+            return { point: this.start, atEnd: true };
+        } else {
+            return { point: this.end, atEnd: true };
+        }
+    };
+    
+    linear.Segment = Segment;
     
     return linear;
 }());
