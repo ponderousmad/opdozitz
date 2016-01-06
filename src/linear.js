@@ -61,7 +61,7 @@ var LINEAR = (function () {
     
     Vector.prototype.dot = function (v) {
         return this.x * v.x + this.y * v.y;
-    }
+    };
 
     linear.scaleVector = function (p, s) {
         return new Vector(p.x * s, p.y * s);
@@ -115,16 +115,16 @@ var LINEAR = (function () {
     }    
     linear.tolEqual = tolEqual;
 
-    function relEqual(float a, float b, float tol) {
+    function relEqual(a, b, tol) {
         tol *= Math.max(Math.abs(a), Math.abs(b));
         return tolEqual(a, b, tol);
     }
     linear.relEqual = relEqual;
 
-    linear.vectorRelEqual = function (a, b, float tol) {
+    linear.vectorRelEqual = function (a, b, tol) {
         tol *= Math.max(Math.max(Math.abs(a.x), Math.abs(b.x)), Math.max(Math.abs(a.y), Math.abs(b.y)));
-        return TolEqual(a.x, b.x, tol) && TolEqual(a.y, b.y, tol);
-    }
+        return tolEqual(a.x, b.x, tol) && tolEqual(a.y, b.y, tol);
+    };
     
     function determinant(v1, v2) {
         return v1.x * v2.y - v1.y * v2.x;
@@ -137,7 +137,7 @@ var LINEAR = (function () {
     linear.checkAligned = checkAligned;
     
     linear.angle = function (v1, v2) {
-        return Math.acos((v1.dot(v2) / (v1.length() * v2.length()));
+        return Math.acos(v1.dot(v2) / (v1.length() * v2.length()));
     };
 
     linear.linesIntersectPD = function(start1, d1, start2, d2) {
@@ -152,9 +152,10 @@ var LINEAR = (function () {
     };
     
     linear.intersectLinesPD = function(start1, d1, start2, d2, intersection) {
-        var between = subVectors(start1, start2);
-        var denom = determinant(d1, d2);
-        intersection.copy(start1)
+        var between = subVectors(start1, start2),
+            denom = determinant(d1, d2);
+            
+        intersection.copy(start1);
         if (tolEqual(denom, 0, COLINEAR_TOLERANCE)) {
             return checkAligned(d1, between, COLINEAR_TOLERANCE);
         }
@@ -167,22 +168,22 @@ var LINEAR = (function () {
         return linear.intersectLinesPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection);
     };
     
-    function inSegment(float parameter) {
+    function inSegment(parameter) {
         return (0 <= parameter && parameter <= 1);
     }
 
     linear.inSegmentPD = function (start, direction, point) {
         var diffX = point.x - start.x;
         var diffY = point.y - start.y;
-        if (diffX != 0) {
+        if (diffX !== 0) {
             return inSegment(diffX / direction.x);
-        } else if (diffY != 0) {
+        } else if (diffY !== 0) {
             return inSegment(diffY / direction.y);
         }
         return false;
     };
     
-    linear.segmentsIntersectPD(start1, d1, start2, d2, tolerance = COLINEAR_TOLERANCE) {
+    linear.segmentsIntersectPDT = function(start1, d1, start2, d2, tolerance) {
         var between = subVectors(start1, start2);
         var denom = determinant(d1, d2);
 
@@ -200,11 +201,15 @@ var LINEAR = (function () {
                inSegment(determinant(d2, between) / denom);
     };
     
-    linear.segmentsIntersectPP = function(start1, end1, start2, end2, tolerance = COLINEAR_TOLERANCE) {
-        return linear.segmentsIntersectPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), tolerance);
+    linear.segmentsIntersectPD = function(start1, d1, start2, d2) {
+        return linear.segmentsIntersectPDT(start1, d1, start2, d2, COLINEAR_TOLERANCE);
     };
     
-    linear.intersectSegmentsPD = function (start1, d1, start2, d2, intersection, tolerance = COLINEAR_TOLERANCE) {
+    linear.segmentsIntersectPP = function(start1, end1, start2, end2) {
+        return linear.segmentsIntersectPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), COLINEAR_TOLERANCE);
+    };
+    
+    linear.intersectSegmentsPDT = function (start1, d1, start2, d2, intersection, tolerance) {
         var between = subVectors(start1, start2);
         var denom = determinant(d1, d2);
 
@@ -220,7 +225,7 @@ var LINEAR = (function () {
                 intersection.copy(start2);
                 return true;
             }
-            if (inSegmentPD(start1, d1, linear.addVectors(start2, d2)) {
+            if (inSegmentPD(start1, d1, linear.addVectors(start2, d2))) {
                 intersection.copy(start2);
                 intersection.add(d2);
                 return true;
@@ -238,9 +243,13 @@ var LINEAR = (function () {
         return inSegment(t1) && inSegment(t2);
     };
     
-    linear.intersectSegmentsPP = function(start1, end1, start2, end2, intersection, tolerance = COLINEAR_TOLERANCE) {
-        return linear.intersectSegmentsPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection, tolerance);
-    }
+    linear.intersectSegmentsPD = function (start1, d1, start2, d2, intersection) {
+        return linear.intersectSegmentsPDT(start1, d1, start2, d2, intersection, COLINEAR_TOLERANCE);
+    };
+    
+    linear.intersectSegmentsPP = function(start1, end1, start2, end2) {
+        return linear.intersectSegmentsPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection, COLINEAR_TOLERANCE);
+    };
     
     return linear;
 }());
