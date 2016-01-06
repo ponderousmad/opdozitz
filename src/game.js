@@ -783,6 +783,7 @@ namespace Opdozitz
         var canvas = document.getElementById("canvas"),
             context = canvas.getContext("2d"),
             imageBatch = new ImageBatch("images/"),
+            background = imageBatch.load("Background.png"),
             frame = imageBatch.load("Frame.png");
         
         imageBatch.commit();
@@ -792,6 +793,7 @@ namespace Opdozitz
             context.fillStyle = "black";
             context.fillRect(0, 0, canvas.width, canvas.height);
             if(imageBatch.loaded) {
+                context.drawImage(background, 0, 0);
                 context.drawImage(frame, 0, 0);
             }
         }
