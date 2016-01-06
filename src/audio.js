@@ -4,7 +4,7 @@ var SoundEffect = (function (baseURL) {
     var gAudioContext = null;
     try {
         var Constructor = window.AudioContext || window.webkitAudioContext;
-        gAudioContext = new AudioContextConstructor();
+        gAudioContext = new Constructor();
     } catch (error) {
         console.log("Error initializing audio:");
         console.log(error);
