@@ -10,7 +10,7 @@
         }
     }
     
-    Flipbook.prototype.setupPlayback = function(startTime, frameTime, frameCount) {
+    Flipbook.prototype.setupPlayback = function(frameTime) {
         return {
             elapsed: 0,
             timePerFrame: frameTime
