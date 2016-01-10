@@ -1,0 +1,247 @@
+﻿{
+    "startDelay": "15000",
+    "columns": [
+      {
+        "locked": "True",
+        "tiles": [
+          { "type": "Flat, Block" },
+          { "type": "Flat, Start" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Flat, Block" },
+          { "type": "Flat, End" },
+          { "type": "Block" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "SlantUp" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "SlantDown" },
+          { "type": "Empty" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "SlantUp" },
+          { "type": "Empty" },
+          { "type": "SlantUp" },
+          { "type": "SlantDown" },
+          { "type": "Empty" },
+          { "type": "SlantDown" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Flat, SpikesUp" },
+          { "type": "Flat, SpikesDown" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "SlantDown" },
+          { "type": "Empty" },
+          { "type": "SlantDown" },
+          { "type": "SlantUp" },
+          { "type": "Empty" },
+          { "type": "SlantUp" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "SlantDown" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "SlantUp" },
+          { "type": "Empty" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "tiles": [
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Empty" },
+          { "type": "Flat" },
+          { "type": "Empty" }
+        ]
+      },
+      {
+        "locked": "True",
+        "tiles": [
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Flat, Block" },
+          { "type": "TransitionTop" },
+          { "type": "Flat, TransitionBottom" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" },
+          { "type": "Block" }
+        ]
+      }
+    ]
+}
