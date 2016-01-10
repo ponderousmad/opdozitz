@@ -274,7 +274,7 @@
     }
 
     function inTile(tile, y) {
-        return (tile.top <= y && y <= tile.bottom);
+        return (tile.top <= y && y <= tile.bottom());
     }
 
     Zit.prototype.tilesInColumns(columns, int left, int right, int top, int bottom) {
@@ -282,10 +282,9 @@
         for (var c = 0; c < columns.length; ++c) {
             var column = columns[c];
             if (column.inColumn(left) || column.inColumn(right)) {
-                for (var t = 0; t < column.length; ++t) {
-                    var tile = column[t];
-                    if (inTile(tile, top) || inTile(tile, bottom))
-                    {
+                for (var t = 0; t < column.length(); ++t) {
+                    var tile = column.at(t);
+                    if (inTile(tile, top) || inTile(tile, bottom)) {
                         result.push(tile);
                     }
                 }

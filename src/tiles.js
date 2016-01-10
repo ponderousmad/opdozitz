@@ -51,7 +51,8 @@
         TRANSITION_SLOPE_RISE = TRANSITION_SLOPE_RUN * TRANSITION_SLOPE_GRADE,
         TRANSITION_ARC_STEPS = 2,
         SPIKES_SIZE = TILE_SIZE / 4,
-        SPIKES_EDGE = TILE_SIZE / 10;
+        SPIKES_EDGE = TILE_SIZE / 10,
+        MOVE_SIZE = 5;
 
     function Tile(parts, left, top) {
         this.parts = parts;
@@ -183,144 +184,91 @@
         this.parts ^= part;
     };
     
-    /*
-    class TileColumn
-    {
-        private int mLeft;
-        private int mTop;
-        private List<Tile> mTiles = new List<Tile>();
-        private bool mLocked;
-        private bool mMovingUp = false;
-        private int mMovingSteps = 0;
-        private const int kMoveSize = 5;
+    function Column(left, top, locked) {
+        this.left = left;
+        this.top = top;
+        this.locked = locked;
+        this.tiles = [];
+        this.movingUp = false;
+        this.movingSteps = 0;
+    }
 
-        internal TileColumn(int left, int top, bool locked)
-        {
-            mLeft = left;
-            mTop = top;
-            mLocked = locked;
+    Column.prototype.add = function (tile) {
+        this.tiles.push(tile);
+    };
+
+    Column.prototype.draw = function (context) {
+        for (var i = 0; i < this.tiles.length; ++i) {
+            this.tiles[i].draw(context);
         }
+    }
 
-        internal void Add(Tile tile)
-        {
-            mTiles.Add(tile);
-        }
-
-        internal void Draw(SpriteBatch batch)
-        {
-            int tileY = mTop;
-            foreach (Tile tile in mTiles)
-            {
-                tile.Draw(batch);
-                tileY += TILE_SIZE;
+    Column.prototype.indexOf(tile) {
+        for (var i = 0; i < this.tiles.length; ++i) {
+            if (this.tiles[i] == tile) {
+                return i;
             }
         }
+        return null;
+    };
 
-        internal int IndexOf(Tile tile)
-        {
-            return mTiles.IndexOf(tile);
-        }
+    Column.prototype.at = function (index) {
+        return this.tiles[index];
+    };
 
-        internal Tile this[int index]
-        {
-            get { return mTiles[index]; }
-        }
+    Column.prototype.length = function ()  {
+        return this.tiles.length;
+    };
 
-        internal IEnumerable<Tile> Tiles
-        {
-            get { return mTiles; }
-        }
+    Column.prototype.right = function () {
+        return this.left + TILE_SIZE;
+    }
 
-        internal int Length
-        {
-            get { return mTiles.Count; }
-        }
+    Column.prototype.moving = function() {
+        return this.movingSteps > 0;
+    }
 
-        internal int Top
-        {
-            get { return mTop; }
-        }
+    Column.prototype.inColumn(x) {
+        return this.left <= x && x <= this.right;
+    };
 
-        internal int Left
-        {
-            get { return mLeft; }
-        }
+    Column.prototype.moveUp = function () {
+        this.movingUp = true;
+        this.tiles.push(this.tiles[0].clone(this.tiles[this.tiles.length-1].top + TILE_SIZE));
+        this.movingSteps = TILE_SIZE;
+    };
 
-        internal int Right
-        {
-            get { return Left + TILE_SIZE; }
-        }
+    Column.prototype.moveDown = function () {
+        this.movingUp = false;
+        this.tiles.insert(0, this.tiles[this.tiles.length-1].clone(this.tiles[0].top - TILE_SIZE));
+        this.movingSteps = TILE_SIZE;
+    };
 
-        internal bool Locked
-        {
-            get { return mLocked; }
-        }
-
-        internal bool Moving
-        {
-            get { return mMovingSteps > 0; }
-        }
-
-        internal bool InColumn(float x)
-        {
-            return Left <= x && x <= Right;
-        }
-
-        internal bool InColumn(int x)
-        {
-            return Left <= x && x <= Right;
-        }
-
-        internal void MoveUp()
-        {
-            mMovingUp = true;
-            mTiles.Add(mTiles.First().Clone(mTiles.Last().Top + TILE_SIZE));
-            mMovingSteps = TILE_SIZE;
-        }
-
-        internal void MoveDown()
-        {
-            mMovingUp = false;
-            mTiles.Insert(0, mTiles.Last().Clone(mTiles.First().Top - TILE_SIZE));
-            mMovingSteps = TILE_SIZE;
-        }
-
-        internal int Update(GameTime gameTime)
-        {
-            int delta = 0;
-            if (mMovingSteps > 0)
-            {
-                if (mMovingUp)
-                {
-                    delta = -kMoveSize;
-                }
-                else
-                {
-                    delta = kMoveSize;
-                }
-                foreach (Tile tile in mTiles)
-                {
-                    tile.Top += delta;
-                }
-                mMovingSteps -= kMoveSize;
-                if (!Moving)
-                {
-                    mTiles.Remove(mMovingUp ? mTiles.First() : mTiles.Last());
-                }
+    Column.prototype.update function(elapsed) {
+        var delta = 0;
+        if (this.movingSteps > 0) {
+            delta = this.movingUp ? -MOVE_SIZE : MOVE_SIZE;
+            for (var i = 0; i < this.tiles.length; ++i) {
+                this.tiles[i].top += delta;
             }
-            return delta;
-        }
-
-        internal void Store(Opdozitz.Utils.IDataWriter writer)
-        {
-            using (Opdozitz.Utils.IDataWriter element = writer["Column"])
-            {
-                element.BoolAttribute("locked", Locked, false);
-                foreach (Tile t in Tiles)
-                {
-                    t.Store(element);
-                }
+            this.movingSteps -= MOVE_SIZE;
+            if (!this.moving()) {
+                this.tiles.splice(mMovingUp ? 0 : this.tiles.length - 1, 1);
             }
         }
-    }*/
+        return delta;
+    }
+
+    Column.prototype.store(columns) {
+        var column = {
+            locked: this.locked,
+            tiles: []
+        };
+        for (var i = 0; i < this.tiles.length; ++i) {
+            this.tiles[i].store(column.tiles);;
+        }
+        columns.push(column);
+    };
+    
+    return { Tile: Tile, TileColumn: Column };
 }());
