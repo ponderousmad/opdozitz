@@ -1,250 +1,189 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
+﻿var TILES = (function () {
+    "use strict";
 
-namespace Opdozitz
-{
-    [Flags]
-    enum TileParts
-    {
-        Empty = 0,
-        Flat = 1,
-        SlantUp = 2,
-        SlantDown = 4,
-        TransitionTop = 8,
-        TransitionBottom = 16,
-        Block = 32,
-        SpikesUp = 64,
-        SpikesDown = 128,
-        Start = 256,
-        End = 512
-    }
-
-    class Tile
-    {
-        private TileParts mParts = TileParts.Empty;
-        private int mLeft, mTop;
-
-        private static Dictionary<TileParts, Texture2D> sTileImages;
-
-        private const float kTransitionSlopeFraction = 0.4f;
-        private const float kTransitionSlopeGrade = 0.5f;
-        private const float kTransitionSlopeRun = GameMain.TileSize * kTransitionSlopeFraction;
-        private const float kTransitionSlopeRise = kTransitionSlopeRun * kTransitionSlopeGrade;
-        private const int kTransitionArcSteps = 2;
-        private const int kSpikesSize = GameMain.TileSize / 4;
-        private const int kSpikesEdge = GameMain.TileSize / 10;
-
-        internal static void LoadContent(ContentManager content)
-        {
-            sTileImages = new Dictionary<TileParts, Texture2D>();
-            foreach (TileParts part in AllParts())
-            {
-                sTileImages.Add(part, content.Load<Texture2D>("Images/Tile" + part.ToString()));
-            }
-        }
-
-        private static Array AllParts()
-        {
-            return Enum.GetValues(typeof(TileParts));
-        }
-
-        private IEnumerable<TileParts> PartsList()
-        {
-            foreach (TileParts part in AllParts())
-            {
-                if (HasPart(part))
-                {
-                    yield return part;
-                }
-            }
-        }
-
-        private bool HasPart(TileParts part)
-        {
-            return (Parts & part) != 0;
-        }
-
-        public Tile(TileParts parts, int left, int top)
-        {
-            mParts = parts;
-            mLeft = left;
-            mTop = top;
-        }
-
-        public int Top
-        {
-            get { return mTop; }
-            set { mTop = value; }
-        }
-
-        public int Bottom
-        {
-            get
-            {
-                return Top + GameMain.TileSize;
-            }
-        }
-
-        public int Left
-        {
-            get { return mLeft; }
-        }
-
-        public int Right
-        {
-            get { return mLeft + GameMain.TileSize; }
-        }
-
-        public IEnumerable<Geom.LineSegment> Platforms
-        {
-            get
-            {
-                if (HasPart(TileParts.Flat))
-                {
-                    yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
-                    yield return new LineSegment(Right, Bottom + GameMain.GirderWidth, Left, Bottom + GameMain.GirderWidth);
-                }
-                if (HasPart(TileParts.SlantUp))
-                {
-                    yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, Right, Top - GameMain.GirderWidth);
-                    yield return new LineSegment(Right, Top + GameMain.GirderWidth, Left, Bottom + GameMain.GirderWidth);
-                }
-                if (HasPart(TileParts.SlantDown))
-                {
-                    yield return new LineSegment(Left, Top - GameMain.GirderWidth, Right, Bottom - GameMain.GirderWidth);
-                    yield return new LineSegment(Right, Bottom + GameMain.GirderWidth, Left, Top + GameMain.GirderWidth);
-                }
-                if (HasPart(TileParts.TransitionTop))
-                {
-                    Vector2 platformEnd = new Vector2(Left + kTransitionSlopeRun, Bottom - GameMain.GirderWidth - kTransitionSlopeRise);
-                    yield return new LineSegment(Left, Bottom - GameMain.GirderWidth, platformEnd.X, platformEnd.Y);
-                    Vector2 center = new Vector2(Left + kTransitionSlopeRun, Bottom);
-                    foreach (Geom.LineSegment segment in ArcSegments(center, platformEnd, Math.PI / 2, kTransitionArcSteps))
-                    {
-                        yield return segment;
-                    }
-                }
-                if (HasPart(TileParts.TransitionBottom))
-                {
-                    Vector2 center = new Vector2(Left + kTransitionSlopeRun, Top);
-                    float radius = GameMain.GirderWidth + kTransitionSlopeRise;
-                    Vector2 arcStart = new Vector2(Left + kTransitionSlopeRun + radius, Top);
-                    foreach (Geom.LineSegment segment in ArcSegments(center, arcStart, Math.PI / 2, kTransitionArcSteps))
-                    {
-                        yield return segment;
-                    }
-                    yield return new LineSegment(Left + kTransitionSlopeRun, Top + radius, Left, Top + GameMain.GirderWidth);
-                }
-            }
-        }
-
-        public IEnumerable<Rectangle> Hazards
-        {
-            get
-            {
-                if (HasPart(TileParts.Block))
-                {
-                    yield return new Rectangle(Left, Top, GameMain.TileSize, GameMain.TileSize);
-                }
-                if (HasPart(TileParts.SpikesUp))
-                {
-                    yield return new Rectangle(Left + kSpikesEdge, Bottom - GameMain.GirderWidth - kSpikesSize, Right-Left - 2 * kSpikesEdge, kSpikesSize);
-                }
-                if (HasPart(TileParts.SpikesDown))
-                {
-                    yield return new Rectangle(Left + kSpikesEdge, Top + GameMain.GirderWidth, Right - Left - 2 * kSpikesEdge, kSpikesSize);
-                }
-            }
-        }
-
-        public IEnumerable<Rectangle> Homes
-        {
-            get
-            {
-                if (HasPart(TileParts.End))
-                {
-                    yield return new Rectangle(Left + Zit.Size/ 4, Top + GameMain.GirderWidth, Zit.Size / 2, Zit.Size);
-                }
-            }
-        }
-
-        private IEnumerable<Geom.LineSegment> ArcSegments(Vector2 center, Vector2 startPoint, double segmentAngle, int steps)
-        {
-            double angleStep = -segmentAngle / steps;
-            Vector2 startSpoke = startPoint - center;
-            double startAngle = Math.Atan2(-startSpoke.Y, startSpoke.X);
-            float radius = startSpoke.Length();
-
-            for (int i = 1; i <= steps; ++i)
-            {
-                double angle = startAngle + i * angleStep;
-                Vector2 platformEnd = center + radius * new Vector2((float)Math.Cos(angle), -(float)Math.Sin(angle));
-                yield return new LineSegment(startPoint, platformEnd);
-                startPoint = platformEnd;
-            }
-        }
-
-        public Tile Clone(int newTop)
-        {
-            return new Tile(Parts, Left, newTop);
-        }
-
-        private TileParts Parts
-        {
-            get { return mParts; }
-        }
-
-        internal void Draw(SpriteBatch batch)
-        {
-            foreach (TileParts part in PartsList())
-            {
-                Rectangle drawBounds = new Rectangle(
-                    Left - GameMain.TileDrawOffset, Top - GameMain.TileDrawOffset,
-                    GameMain.TileDrawSize, GameMain.TileDrawSize
-                );
-                batch.Draw(sTileImages[part], drawBounds, Color.White);
-            }
-        }
-
-        [System.Diagnostics.Conditional("DEBUG")]
-        private void DrawDiagnostics(SpriteBatch batch)
-        {
-            foreach (LineSegment platform in Platforms)
-            {
-                batch.Draw(GameMain.Pixel, new Rectangle((int)(Math.Round(platform.Start.X)), (int)(Math.Round(platform.Start.Y)), 1, 1), Color.White);
-            }
-        }
-
-        public override string ToString()
-        {
-            return "Location: " + Left.ToString() + ", " + Top.ToString() + " Parts: " + mParts.ToString();
-        }
-
-        internal void Store(Opdozitz.Utils.IDataWriter writer)
-        {
-            using (Opdozitz.Utils.IDataWriter element = writer["Tile"])
-            {
-                element.Attribute("type", Parts.ToString());
-            }
-        }
-
-        internal void TogglePart(TileParts part)
-        {
-            mParts ^= part;
-        }
-    }
+    var Parts = {
+        Empty : 0,
+        Flat : 1,
+        SlantUp : 2,
+        SlantDown : 4,
+        TransitionTop : 8,
+        TransitionBottom : 16,
+        Block : 32,
+        SpikesUp : 64,
+        SpikesDown : 128,
+        Start : 256,
+        End : 512
+    };
     
+    var PART_NAMES = [];
+    PART_NAMES[Parts.Empty] = "Empty";
+    PART_NAMES[Parts.Flat] = "Flat";
+    PART_NAMES[Parts.SlantUp] = "SlantUp";
+    PART_NAMES[Parts.SlantDown] = "SlantDown";
+    PART_NAMES[Parts.TransitionTop] = "TransitionTop";
+    PART_NAMES[Parts.TransitionBottom] = "TransitionBottom";
+    PART_NAMES[Parts.Block] = "Block";
+    PART_NAMES[Parts.SpikesUp] = "SpikesUp";
+    PART_NAMES[Parts.SpikesDown] = "SpikesDown";
+    PART_NAMES[Parts.Start] = "Start";
+    PART_NAMES[Parts.End] = "End";
+    
+    var ALL_PARTS[];
+    var IMAGES = [];
+
+    var tileBatch = new ImageBatch("images/");
+    (function () {
+        for (var p in Parts) {
+            if (Parts.hasOwnProperty(p)) {
+                ALL_PARTS.push(p);
+                IMAGES[p] = tileBatch.load("Tile" + PART_NAMES[p] + ".png");
+            }
+        }
+        tileBatch.commit();
+    }());
+    
+    var TILE_SIZE = 50,
+        GIRDER_WIDTH = 3,
+        TILE_DRAW_OFFSET = 5,
+        TRANSITION_SLOPE_FRACTION = 0.4,
+        TRANSITION_SLOPE_GRADE = 0.5,
+        TRANSITION_SLOPE_RUN = TILE_SIZE * TRANSITION_SLOPE_FRACTION,
+        TRANSITION_SLOPE_RISE = TRANSITION_SLOPE_RUN * TRANSITION_SLOPE_GRADE,
+        TRANSITION_ARC_STEPS = 2,
+        SPIKES_SIZE = TILE_SIZE / 4,
+        SPIKES_EDGE = TILE_SIZE / 10;
+
+    function Tile(parts, left, top) {
+        this.parts = parts;
+        this.left = left;
+        this.top = top;
+    };
+    
+    Tile.prototype.hasPart = function (part) {
+        return (this.parts & part) != 0;
+    };
+    
+    Tile.prototype.bottom = function () {
+        return this.top + TILE_SIZE;
+    };
+    
+    Tile.prototype.right = function () {
+        return this.left + TILE_SIZE;
+    };
+
+    Tile.prototype.platforms = function () {
+            result = [];
+            if (this.hasPart(Parts.Flat)) {
+                result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, this.right(), this.bottom() - GIRDER_WIDTH));
+                result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.bottom() + GIRDER_WIDTH));
+            }
+            if (this.hasPart(Parts.SlantUp)) {
+                result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, this.right(), this.top - GIRDER_WIDTH));
+                result.push(new LINEAR.Segment(this.right(), this.top + GIRDER_WIDTH, this.left, this.bottom() + GIRDER_WIDTH));
+            }
+            if (this.hasPart(Parts.SlantDown)) {
+                result.push(new LINEAR.Segment(this.left, this.top - GIRDER_WIDTH, this.right(), this.bottom() - GIRDER_WIDTH));
+                result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.top + GIRDER_WIDTH));
+            }
+            if (this.hasPart(Parts.TransitionTop)) {
+                var platformEnd = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom() - GIRDER_WIDTH - TRANSITION_SLOPE_RISE));
+                result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, platformEnd.X, platformEnd.Y);
+                var center = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom());
+                foreach (Geom.LineSegment segment in ArcSegments(center, platformEnd, Math.PI / 2, TRANSITION_ARC_STEPS))
+                {
+                    yield return segment;
+                }
+            }
+            if (this.hasPart(Parts.TransitionBottom)) {
+                var center = new Vector(this.left + TRANSITION_SLOPE_RUN, this.top);
+                var radius = GIRDER_WIDTH + TRANSITION_SLOPE_RISE;
+                var arcStart = new Vector(this.left + TRANSITION_SLOPE_RUN + radius, this.top);
+                foreach (Geom.LineSegment segment in ArcSegments(center, arcStart, Math.PI / 2, TRANSITION_ARC_STEPS))
+                {
+                    yield return segment;
+                }
+                result.push(new LINEAR.Segment(this.left + TRANSITION_SLOPE_RUN, this.top + radius, this.left, this.top + GIRDER_WIDTH));
+            }
+        }
+        return result;
+    };
+
+    Tile.prototype.hazards = function () {
+        var boxes = [];
+        if (this.hasPart(Parts.Block)) {
+            boxes.push(new LINEAR.AABox(this.left, this.top, TILE_SIZE, TILE_SIZE));
+        }
+        if (this.hasPart(Parts.SpikesUp)) {
+            boxes.push(new LINEAR.AABox(this.left + SPIKES_EDGE, this.bottom() - GIRDER_WIDTH - SPIKES_SIZE, this.right()-this.left - 2 * SPIKES_EDGE, SPIKES_SIZE));
+        }
+        if (this.hasPart(Parts.SpikesDown)) {
+            boxes.push(new LINEAR.AABox(this.left + SPIKES_EDGE, this.top + GIRDER_WIDTH, this.right() - this.left - 2 * SPIKES_EDGE, SPIKES_SIZE));
+        }
+    };
+
+    Tile.prototype.home = function (size) {
+        if (this.hasPart(Parts.End))
+        {
+            return new LineSegment.AABox(this.left + size / 4, this.top + GIRDER_WIDTH, size / 2, size);
+        }
+        return null;
+    };
+
+    Tile.prototype.arcSegments(segments, center, startPoint, segmentAngle, steps)
+    {
+        var angleStep = -segmentAngle / steps,
+            startSpoke = LINEAR.subVectors(startPoint, center),
+            startAngle = Math.atan2(-startSpoke.Y, startSpoke.X),
+            radius = startSpoke.length();
+
+        for (var i = 1; i <= steps; ++i)
+        {
+            var angle = startAngle + i * angleStep,
+                platformEnd = center.clone(),
+                spoke = LINEAR.angleToVector(angle);
+            spoke.y = -spoke.y;
+            platformEnd.addScaled(spoke, radius);
+            segments.push(new LINEAR.Segment(startPoint, platformEnd));
+            startPoint = platformEnd;
+        }
+    };
+
+    Tile.prototype.clone = function (newTop) {
+        return new Tile(this.parts, this.left, newTop);
+    };
+
+    Tile.prototype.draw = function(context) {
+        for (var i = 0; i < ALL_PARTS.length; ++i) {
+            var part = ALL_PARTS[i],
+                size = TILE_SIZE + 2 * TILE_DRAW_OFFSET;
+            context.drawImage(IMAGES[part], this.left - TILE_DRAW_OFFSET, this.top - TILE_DRAW_OFFSET, size, size);
+        }
+    };
+
+    Tile.prototype.drawDiagnostics = function(context) {
+        var segments = this.platforms();
+        for (var i = 0; i < segments, ++i) {
+            var platform = segments[i];
+            ctx.beginPath();
+            ctx.moveTo(i.start);
+            ctx.lineTo(i.end);
+            ctx.stroke();
+        }
+    };
+
+    Tile.prototype.toString = function() {
+        return "Location: " + this.left + ", " + this.top + " Parts: " + mParts;
+    };
+
+    Tile.prototype.store = function(tiles) {
+        tiles.push(this.parts);
+    };
+
+    Tile.prototype.togglePart(part) {
+        this.parts ^= part;
+    };
+    
+    /*
     class TileColumn
     {
         private int mLeft;
@@ -273,7 +212,7 @@ namespace Opdozitz
             foreach (Tile tile in mTiles)
             {
                 tile.Draw(batch);
-                tileY += GameMain.TileSize;
+                tileY += TILE_SIZE;
             }
         }
 
@@ -309,7 +248,7 @@ namespace Opdozitz
 
         internal int Right
         {
-            get { return Left + GameMain.TileSize; }
+            get { return Left + TILE_SIZE; }
         }
 
         internal bool Locked
@@ -335,15 +274,15 @@ namespace Opdozitz
         internal void MoveUp()
         {
             mMovingUp = true;
-            mTiles.Add(mTiles.First().Clone(mTiles.Last().Top + GameMain.TileSize));
-            mMovingSteps = GameMain.TileSize;
+            mTiles.Add(mTiles.First().Clone(mTiles.Last().Top + TILE_SIZE));
+            mMovingSteps = TILE_SIZE;
         }
 
         internal void MoveDown()
         {
             mMovingUp = false;
-            mTiles.Insert(0, mTiles.Last().Clone(mTiles.First().Top - GameMain.TileSize));
-            mMovingSteps = GameMain.TileSize;
+            mTiles.Insert(0, mTiles.Last().Clone(mTiles.First().Top - TILE_SIZE));
+            mMovingSteps = TILE_SIZE;
         }
 
         internal int Update(GameTime gameTime)
@@ -383,5 +322,5 @@ namespace Opdozitz
                 }
             }
         }
-    }
-}
+    }*/
+}());

@@ -196,7 +196,7 @@
         if (this.isRolling()) {
             var overlapping = this.tilesInCurrentColumns(columns);
             for (var i = 0; i < overlapping.length; ++i) {
-                var home = overlapping[i].home();
+                var home = overlapping[i].home(SIZE);
                 if (home !== null) {
                     if (home.contains(this.roundLocation())) {
                         this.markHome();

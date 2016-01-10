@@ -259,9 +259,14 @@ var LINEAR = (function () {
         return linear.intersectSegmentsPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection, COLINEAR_TOLERANCE);
     };
     
-    function Segment(start, end) {
-        this.start = start;
-        this.end = end;
+    function Segment(a, b, c, d) {
+        if (isNaN(a)) {
+            this.start = start;
+            this.end = end;
+        } else {
+            this.start = new Vector(a, b);
+            this.end = new Vector(c, d);
+        }
     }
     
     Segment.prototype.direction = function () {
@@ -355,6 +360,25 @@ var LINEAR = (function () {
     };
     
     linear.Segment = Segment;
+    
+    var AABox = function(left, top, width, height) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+        this.right = left + width;
+        this.bottom = top + height;
+    };
+    
+    AABox.prototype.contains = function(p) {
+        return this.left <= p.x && p.x <= this.right && this.top <= p.y && p.y <= this.bottom;
+    };
+    
+    AABox.prototype.inflated = function(size) {
+        return new AABox(this.left - size, this.top - size, width + 2 * size, height + 2 * size);
+    };
+    
+    linear.AABox = AABox;
     
     return linear;
 }());
