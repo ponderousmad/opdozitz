@@ -203,7 +203,7 @@
         }
     }
 
-    Column.prototype.indexOf(tile) {
+    Column.prototype.indexOf = function (tile) {
         for (var i = 0; i < this.tiles.length; ++i) {
             if (this.tiles[i] == tile) {
                 return i;
@@ -244,7 +244,7 @@
         this.movingSteps = TILE_SIZE;
     };
 
-    Column.prototype.update function(elapsed) {
+    Column.prototype.update = function(elapsed) {
         var delta = 0;
         if (this.movingSteps > 0) {
             delta = this.movingUp ? -MOVE_SIZE : MOVE_SIZE;
@@ -270,5 +270,5 @@
         columns.push(column);
     };
     
-    return { Tile: Tile, TileColumn: Column };
+    return { Tile: Tile, TileColumn: Column, SIZE: TILE_SIZE, GIRDER_WIDTH: GIRDER_WIDTH };
 }());
