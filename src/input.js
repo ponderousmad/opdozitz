@@ -20,8 +20,16 @@ var INPUT = (function (LINEAR) {
         return this.pressed[keyCode] ? true : false;
     };
 
+    KeyboardState.prototype.isShiftDown = function () {
+        return this.isKeyDown(16);
+    };
+
     KeyboardState.prototype.isCtrlDown = function () {
         return this.isKeyDown(17);
+    };
+
+    KeyboardState.prototype.isAltDown = function () {
+        return this.isKeyDown(18);
     };
        
     KeyboardState.prototype.isAsciiDown = function (ascii) {
@@ -37,6 +45,16 @@ var INPUT = (function (LINEAR) {
         }
         return count;
     };
+    
+    KeyboardState.prototype.clone = function () {
+        var copy = new KeyboardState();
+        for (var p in this.pressed) {
+            if (this.pressed.hasOwnProperty(p)) {
+                copy.pressed = this.pressed[p];
+            }
+        }
+        return copy;
+    }
 
     function MouseState(element) {
         this.location = new LINEAR.Vector(0, 0);

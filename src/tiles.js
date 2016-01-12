@@ -27,6 +27,7 @@
     PART_NAMES[Parts.SpikesDown] = "SpikesDown";
     PART_NAMES[Parts.Start] = "Start";
     PART_NAMES[Parts.End] = "End";
+    var PART_VALUES = {};
     
     var ALL_PARTS[];
     var IMAGES = [];
@@ -36,6 +37,7 @@
         for (var p in Parts) {
             if (Parts.hasOwnProperty(p)) {
                 ALL_PARTS.push(p);
+                PART_VALUES[PART_NAMES[p]] = p;
                 IMAGES[p] = tileBatch.load("Tile" + PART_NAMES[p] + ".png");
             }
         }
@@ -55,7 +57,10 @@
         MOVE_SIZE = 5;
 
     function Tile(parts, left, top) {
-        this.parts = parts;
+        this.parts = Parts.empty;
+        for (var i = 0; i < parts.length; ++i) {
+            this.parts |= PART_VALUES[parts[i]];
+        }
         this.left = left;
         this.top = top;
     };
@@ -73,38 +78,37 @@
     };
 
     Tile.prototype.platforms = function () {
-            result = [];
-            if (this.hasPart(Parts.Flat)) {
-                result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, this.right(), this.bottom() - GIRDER_WIDTH));
-                result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.bottom() + GIRDER_WIDTH));
+        result = [];
+        if (this.hasPart(Parts.Flat)) {
+            result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, this.right(), this.bottom() - GIRDER_WIDTH));
+            result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.bottom() + GIRDER_WIDTH));
+        }
+        if (this.hasPart(Parts.SlantUp)) {
+            result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, this.right(), this.top - GIRDER_WIDTH));
+            result.push(new LINEAR.Segment(this.right(), this.top + GIRDER_WIDTH, this.left, this.bottom() + GIRDER_WIDTH));
+        }
+        if (this.hasPart(Parts.SlantDown)) {
+            result.push(new LINEAR.Segment(this.left, this.top - GIRDER_WIDTH, this.right(), this.bottom() - GIRDER_WIDTH));
+            result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.top + GIRDER_WIDTH));
+        }
+        if (this.hasPart(Parts.TransitionTop)) {
+            var platformEnd = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom() - GIRDER_WIDTH - TRANSITION_SLOPE_RISE));
+            result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, platformEnd.X, platformEnd.Y);
+            var center = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom());
+            foreach (Geom.LineSegment segment in ArcSegments(center, platformEnd, Math.PI / 2, TRANSITION_ARC_STEPS))
+            {
+                yield return segment;
             }
-            if (this.hasPart(Parts.SlantUp)) {
-                result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, this.right(), this.top - GIRDER_WIDTH));
-                result.push(new LINEAR.Segment(this.right(), this.top + GIRDER_WIDTH, this.left, this.bottom() + GIRDER_WIDTH));
+        }
+        if (this.hasPart(Parts.TransitionBottom)) {
+            var center = new Vector(this.left + TRANSITION_SLOPE_RUN, this.top);
+            var radius = GIRDER_WIDTH + TRANSITION_SLOPE_RISE;
+            var arcStart = new Vector(this.left + TRANSITION_SLOPE_RUN + radius, this.top);
+            foreach (Geom.LineSegment segment in ArcSegments(center, arcStart, Math.PI / 2, TRANSITION_ARC_STEPS))
+            {
+                yield return segment;
             }
-            if (this.hasPart(Parts.SlantDown)) {
-                result.push(new LINEAR.Segment(this.left, this.top - GIRDER_WIDTH, this.right(), this.bottom() - GIRDER_WIDTH));
-                result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.top + GIRDER_WIDTH));
-            }
-            if (this.hasPart(Parts.TransitionTop)) {
-                var platformEnd = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom() - GIRDER_WIDTH - TRANSITION_SLOPE_RISE));
-                result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, platformEnd.X, platformEnd.Y);
-                var center = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom());
-                foreach (Geom.LineSegment segment in ArcSegments(center, platformEnd, Math.PI / 2, TRANSITION_ARC_STEPS))
-                {
-                    yield return segment;
-                }
-            }
-            if (this.hasPart(Parts.TransitionBottom)) {
-                var center = new Vector(this.left + TRANSITION_SLOPE_RUN, this.top);
-                var radius = GIRDER_WIDTH + TRANSITION_SLOPE_RISE;
-                var arcStart = new Vector(this.left + TRANSITION_SLOPE_RUN + radius, this.top);
-                foreach (Geom.LineSegment segment in ArcSegments(center, arcStart, Math.PI / 2, TRANSITION_ARC_STEPS))
-                {
-                    yield return segment;
-                }
-                result.push(new LINEAR.Segment(this.left + TRANSITION_SLOPE_RUN, this.top + radius, this.left, this.top + GIRDER_WIDTH));
-            }
+            result.push(new LINEAR.Segment(this.left + TRANSITION_SLOPE_RUN, this.top + radius, this.left, this.top + GIRDER_WIDTH));
         }
         return result;
     };
@@ -154,10 +158,12 @@
     };
 
     Tile.prototype.draw = function(context) {
+        var size = TILE_SIZE + 2 * TILE_DRAW_OFFSET;
         for (var i = 0; i < ALL_PARTS.length; ++i) {
-            var part = ALL_PARTS[i],
-                size = TILE_SIZE + 2 * TILE_DRAW_OFFSET;
-            context.drawImage(IMAGES[part], this.left - TILE_DRAW_OFFSET, this.top - TILE_DRAW_OFFSET, size, size);
+            var part = ALL_PARTS[i];
+            if (this.hasPart(part)) {
+                context.drawImage(IMAGES[part], this.left - TILE_DRAW_OFFSET, this.top - TILE_DRAW_OFFSET, size, size);
+            }
         }
     };
 
@@ -177,6 +183,7 @@
     };
 
     Tile.prototype.store = function(tiles) {
+        var partNames = [];
         tiles.push(this.parts);
     };
 
@@ -265,10 +272,10 @@
             tiles: []
         };
         for (var i = 0; i < this.tiles.length; ++i) {
-            this.tiles[i].store(column.tiles);;
+            this.tiles[i].store(column.tiles);
         }
         columns.push(column);
     };
     
-    return { Tile: Tile, TileColumn: Column, SIZE: TILE_SIZE, GIRDER_WIDTH: GIRDER_WIDTH };
+    return { Tile: Tile, TileColumn: Column, Parts: Parts, SIZE: TILE_SIZE, GIRDER_WIDTH: GIRDER_WIDTH };
 }());

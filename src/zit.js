@@ -24,7 +24,7 @@
     var homeSound = SoundEffect("/opdozitz/audio/Blip.wav");
     var spawnSound = SoundEffect("/opdozitz/audio/Ding.wav");
 
-    var Zit = function(tile, speedFactor, frame) {
+    var Zit = function(tile, speedFactor) {
         var platform = tile.platform(0);
         
         this.speedFactor = speedFactor;
@@ -38,7 +38,6 @@
         this.exploding = null;
 
         this.currentTile = tile;
-        this.frame = frame;
         
         spawnSound.play()
     };
