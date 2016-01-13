@@ -476,6 +476,7 @@
             return;
         }
         context.drawImage(background, 0, 0);
+        context.strokeStyle = "rgb(255,0,0)";
 
         for (var c = 0; c < columns.length; ++c) {
             columns[c].draw(context);

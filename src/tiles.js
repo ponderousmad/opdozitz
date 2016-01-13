@@ -77,16 +77,16 @@
             result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.top + GIRDER_WIDTH));
         }
         if (this.hasPart(Parts.TransitionTop)) {
-            var platformEnd = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom() - GIRDER_WIDTH - TRANSITION_SLOPE_RISE);
-            result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, platformEnd.X, platformEnd.Y));
-            var topCenter = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom());
-            makeArcSegments(topCenter, platformEnd, Math.PI / 2, TRANSITION_ARC_STEPS, result);
+            var platformEnd = new LINEAR.Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom() - GIRDER_WIDTH - TRANSITION_SLOPE_RISE);
+            result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, platformEnd.x, platformEnd.y));
+            var topCenter = new LINEAR.Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom());
+            this.makeArcSegments(topCenter, platformEnd, Math.PI / 2, TRANSITION_ARC_STEPS, result);
         }
         if (this.hasPart(Parts.TransitionBottom)) {
-            var bottomCenter = new Vector(this.left + TRANSITION_SLOPE_RUN, this.top);
+            var bottomCenter = new LINEAR.Vector(this.left + TRANSITION_SLOPE_RUN, this.top);
             var radius = GIRDER_WIDTH + TRANSITION_SLOPE_RISE;
-            var arcStart = new Vector(this.left + TRANSITION_SLOPE_RUN + radius, this.top);
-            makeArcSegments(bottomCenter, arcStart, Math.PI / 2, TRANSITION_ARC_STEPS, result);
+            var arcStart = new LINEAR.Vector(this.left + TRANSITION_SLOPE_RUN + radius, this.top);
+            this.makeArcSegments(bottomCenter, arcStart, Math.PI / 2, TRANSITION_ARC_STEPS, result);
             result.push(new LINEAR.Segment(this.left + TRANSITION_SLOPE_RUN, this.top + radius, this.left, this.top + GIRDER_WIDTH));
         }
         return result;
@@ -115,7 +115,7 @@
     Tile.prototype.makeArcSegments = function (center, startPoint, segmentAngle, steps, segments) {
         var angleStep = -segmentAngle / steps,
             startSpoke = LINEAR.subVectors(startPoint, center),
-            startAngle = Math.atan2(-startSpoke.Y, startSpoke.X),
+            startAngle = Math.atan2(-startSpoke.y, startSpoke.x),
             radius = startSpoke.length();
 
         for (var i = 1; i <= steps; ++i) {
@@ -144,12 +144,12 @@
 
     Tile.prototype.drawDiagnostics = function (context) {
         var segments = this.platforms();
-        for (var i = 0; i < segments; ++i) {
-            var platform = segments[i];
-            ctx.beginPath();
-            ctx.moveTo(i.start);
-            ctx.lineTo(i.end);
-            ctx.stroke();
+        for (var i = 0; i < segments.length; ++i) {
+            var segment = segments[i];
+            context.beginPath();
+            context.moveTo(segment.start.x, segment.start.y);
+            context.lineTo(segment.end.x, segment.end.y);
+            context.stroke();
         }
     };
 
