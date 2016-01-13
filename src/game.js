@@ -29,9 +29,9 @@
         
         instructions = [
             imageBatch.load("Instructions.png"),
-            imageBatch.load("LevelFailedInstruction.png"),
             imageBatch.load("LevelPassedInstruction.png"),
-            imageBatch.load("Congratulations.png"),
+            imageBatch.load("LevelFailedInstruction.png"),
+            imageBatch.load("Congratulations.png")
         ],
     
         zits = [],
