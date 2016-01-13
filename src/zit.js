@@ -1,9 +1,9 @@
-﻿my Zit = (function() {
+﻿var Zit = (function() {
     var State =  {
-        Rolling = 0,
-        Dead = 1,
-        Falling = 2,
-        Home = 3
+        Rolling: 0,
+        Dead: 1,
+        Falling: 2,
+        Home: 3
     };
     
     var SIZE = 20;
@@ -39,13 +39,13 @@
 
         this.currentTile = tile;
         
-        spawnSound.play()
+        spawnSound.play();
     };
     
     Zit.prototype.getSize = function () { return SIZE; };
     Zit.prototype.contactTile = function () { return this.currentTile; };
 
-    Zit.prototype.update = function() (elapsed, columns, frame) {
+    Zit.prototype.update = function (elapsed, columns, frame) {
         var rotationRemaining = elapsed * ANGLE_INCREMENT * this.speedFactor;
 
         while (this.isRolling() && rotationRemaining > 0) {
@@ -69,7 +69,7 @@
         if (this.exploding !== null && exposion.update(elapsed, this.exploding)) {
             this.exploding = null;
         }
-    }
+    };
 
     // Calculate the angle between to already normalized vectors.
     // Does not check if the vectors are normalized
@@ -78,32 +78,33 @@
     }
 
     Zit.prototype.updateRolling = function (columns, rotation) {
-        var support = LINEAR.subVectors(this.location, this.contact);
-        var supportAngle = Math.atan2(support.y, support.x);
-        var newAngle = supportAngle + rotation;
-
-        var swungLocation = LINEAR.addVectors(this.contact, LINEAR.scaleVector(LINEAR.angleToVector(newAngle), RADIUS);
-
-        var top = Math.floor(Math.min(this.location.y, swungLocation.y)) - SIZE;
-        var bottom = Math.ceiling(Math.max(this.location.y, swungLocation.y)) + SIZE;
-        var left = Math.floor(Math.min(this.location.x, swungLocation.x) - RADIUS);
-        var right = Math.ceiling(Math.max(this.location.x, swungLocation.x) + RADIUS);
-
-        var closestPlatform = null;
-        var newContact = this.contact;
-        var closestTile = null;
-        var closestAtEnd = false;
-        var DISTANCE_CHECK_HACK = 1.01;
-        var minDistanceSquared = RADIUS * RADIUS * DISTANCE_CHECK_HACK;
+        var support = LINEAR.subVectors(this.location, this.contact),
+            supportAngle = Math.atan2(support.y, support.x),
+            newAngle = supportAngle + rotation,
+    
+            swungLocation = LINEAR.addVectors(this.contact, LINEAR.scaleVector(LINEAR.angleToVector(newAngle), RADIUS)),
+    
+            top = Math.floor(Math.min(this.location.y, swungLocation.y)) - SIZE,
+            bottom = Math.ceiling(Math.max(this.location.y, swungLocation.y)) + SIZE,
+            left = Math.floor(Math.min(this.location.x, swungLocation.x) - RADIUS),
+            right = Math.ceiling(Math.max(this.location.x, swungLocation.x) + RADIUS),
+    
+            closestPlatform = null,
+            newContact = this.contact,
+            closestTile = null,
+            closestAtEnd = false,
+            DISTANCE_CHECK_HACK = 1.01,
+            minDistanceSquared = RADIUS * RADIUS * DISTANCE_CHECK_HACK,
+            
+            overlapping = this.tilesInColumns(columns, left, right, top, bottom);
         
-        var overlapping = this.tilesInColumns(columns, left, right, top, bottom);
         for (var i = 0; i < overlapping.length; ++i) {
-            var tile = overlapping[i];
-            var platforms = tile.platforms();
+            var tile = overlapping[i],
+                platforms = tile.platforms();
             for (var p = 0; p < platforms.length; ++p) {
-                var platform = platforms[p];
-                var currentClosest = platform.closestPoint(swungLocation;
-                var distanceSquared = LINEAR.pointDistanceSq(currentClosest.point, swungLocation);
+                var platform = platforms[p],
+                    currentClosest = platform.closestPoint(swungLocation),
+                    distanceSquared = LINEAR.pointDistanceSq(currentClosest.point, swungLocation);
                 if (distanceSquared < minDistanceSquared) {
                     closestAtEnd = currentClosest.atEnd;
                     closestPlatform = platform;
@@ -114,17 +115,17 @@
             }
         }
 
-        if (closestPlatform != null) {
+        if (closestPlatform !== null) {
             this.contact = newContact;
             var DIE_RADIUS = RADIUS / 2;
             if (minDistanceSquared < DIE_RADIUS * DIE_RADIUS) {
                 this.die();
             } else if (closestAtEnd) {
-                var normal = LINEAR.subVectors(swungLocation, this.contact);
+                var FALL_ANGLE = Math.PI * 0.4,
+                    normal = LINEAR.subVectors(swungLocation, this.contact);
                 normal.normalize();
-
-                var FALL_ANGLE = Math.PI * 0.4;
-                double angle = normalAngle(closestPlatform.directedNormal(), normal);
+                    
+                var angle = normalAngle(closestPlatform.directedNormal(), normal);
                 if (normal.y > 0 && angle > FALL_ANGLE) {
                     this.location = swungLocation;
                     this.fall();
@@ -146,27 +147,26 @@
     Zit.updateFalling = function (columns, elapsed) {
         this.fallSpeed += elapsed * FALL_FORCE;
 
-        var fallLocation = new Vector(this.location.x, this.location.y + this.fallSpeed);
-        var closestPlatform = null;
-        var newContact = new Vector(0,0);
-        var contactTile = null;
+        var fallLocation = new LINEAR.Vector(this.location.x, this.location.y + this.fallSpeed),
+            closestPlatform = null,
+            newContact = new LINEAR.Vector(0,0),
+            contactTile = null;
         if (this.fallSpeed < FATAL_VELOCITY) {
-            var highestIntersection = fallLocation.y;
-            var overlapping = this.tilesInCurrentColumns(columns);
+            var highestIntersection = fallLocation.y,
+                overlapping = this.tilesInCurrentColumns(columns);
             for (var i = 0; i < overlapping.length; ++i) {
-                var tile = overlapping[i];
-                var platforms = tile.platforms();
+                var tile = overlapping[i],
+                    platforms = tile.platforms();
                 for (var p = 0; p < platforms.length; ++p) {
                     var platform = platforms[p];
                     if (this.isCeiling(platform.directedNormal())) {
                         continue;
                     }
-                    var offsetVector = LINEAR.scaleVector(platform.directedNormal(), RADIUS);
-                    var offsetStart = LINEAR.addVectors(fallLocation, offsetVector);
-                    var offsetEnd = offsetStart.clone();
-                    offsetEnd.y -= SIZE;
-                    var contact = new LINEAR.Vector();
-                    var segment = new LINEAR.Segment(offsetStart, offsetEnd)
+                    var offsetVector = LINEAR.scaleVector(platform.directedNormal(), RADIUS),
+                        offsetStart = LINEAR.addVectors(fallLocation, offsetVector),
+                        offsetEnd = LINEAR.addVectors(offsetStart.clone(), new LINEAR.Vector(0,-SIZE)),
+                        contact = new LINEAR.Vector(),
+                        segment = new LINEAR.Segment(offsetStart, offsetEnd);
                     if (platform.FindIntersection(segment, contact)) {
                         var landLocation = LINEAR.subVectors(contact, offsetVector);
                         if (this.location.y < landLocation.y && landLocation.y < highestIntersection) {
@@ -189,9 +189,9 @@
         } else {
             this.location = fallLocation;
         }
-    }
+    };
 
-    Zit.prototype.checkHome(columns) {
+    Zit.prototype.checkHome = function (columns) {
         if (this.isRolling()) {
             var overlapping = this.tilesInCurrentColumns(columns);
             for (var i = 0; i < overlapping.length; ++i) {
@@ -203,7 +203,7 @@
                 }
             }
         }
-    }
+    };
 
     Zit.prototype.checkBoundaries = function(frame) {
         if (this.location.y < (frame.top + RADIUS)) {
@@ -229,10 +229,10 @@
                 }
             }
         }
-    }
+    };
 
     var minusY = new Vector(0, -1);
-    Zit.isCeiling = function(directedNormal) {
+    Zit.isCeiling = function (directedNormal) {
         return normalAngle(directedNormal, minusY) > (Math.PI / 2);
     };
 
@@ -270,13 +270,13 @@
             Math.floor(this.location.y - RADIUS),
             Math.ceiling(this.location.y + RADIUS + Size)
         );
-    }
+    };
 
     function inTile(tile, y) {
         return (tile.top <= y && y <= tile.bottom());
     }
 
-    Zit.prototype.tilesInColumns(columns, int left, int right, int top, int bottom) {
+    Zit.prototype.tilesInColumns = function (columns, left, right, top, bottom) {
         var result = [];
         for (var c = 0; c < columns.length; ++c) {
             var column = columns[c];
@@ -289,22 +289,22 @@
                 }
             }
         }
-    }
+    };
 
-    Zit.prototype.fall = function() {
+    Zit.prototype.fall = function () {
         if (!this.isFalling()) {
             this.currentTile = null;
             this.state = State.Falling;
         }
     };
 
-    Zit.prototype.die() {
+    Zit.prototype.die = function () {
         if (this.isAlive()) {
             this.state = State.Dead;
             this.exploding = explosion.setupPlayback(EXPLOSION_TIME_PER_FRAME);
             explodeSound.play();
         }
-    }
+    };
 
     Zit.markHome = function () {
         if (!this.isHome()) {
@@ -329,9 +329,9 @@
     Zit.prototype.isAlive = function () { return this.state === State.Rolling || this.state === State.Falling; };
     Zit.prototype.isHome = function () { return this.state === State.Home; };
 
-    Zit.prototype.inColumn = function(column) { return column.inColumn(this.location.x); };
+    Zit.prototype.inColumn = function (column) { return column.inColumn(this.location.x); };
 
-    Zit.prototype.shiftBy = function(delta) {
+    Zit.prototype.shiftBy = function (delta) {
         if (this.isRolling()) {
             this.location.y += delta;
             this.contact.y += delta;
