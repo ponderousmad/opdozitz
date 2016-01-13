@@ -1,12 +1,12 @@
 ﻿var Flipbook = (function () {
-    function Flipbook(imageBatch, basename, frameCount, digits) {
+    function Flipbook(imageBatch, baseName, frameCount, digits) {
         this.frames = [];
-        for (var i = 0; i < frameCount; ++i) {
+        for (var i = 1; i <= frameCount; ++i) {
             var number = i.toString();
             while (number.length < digits) {
                 number = "0" + number;
             }
-            this.frames.push(imageBatch.load(base + number + ".png"));
+            this.frames.push(imageBatch.load(baseName + number + ".png"));
         }
     }
     
@@ -28,4 +28,6 @@
             y = location.y - (center ? height * 0.5 : 0);
         context.drawImage(this.frames[index], x, y, width, height);
     };
+    
+    return Flipbook;
 }());
