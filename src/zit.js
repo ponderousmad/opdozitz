@@ -168,7 +168,7 @@
                         offsetEnd = LINEAR.addVectors(offsetStart.clone(), new LINEAR.Vector(0,-SIZE)),
                         contact = new LINEAR.Vector(),
                         segment = new LINEAR.Segment(offsetStart, offsetEnd);
-                    if (platform.FindIntersection(segment, contact)) {
+                    if (platform.findIntersection(segment, contact)) {
                         var landLocation = LINEAR.subVectors(contact, offsetVector);
                         if (this.location.y < landLocation.y && landLocation.y < highestIntersection) {
                             closestPlatform = platform;
@@ -238,7 +238,7 @@
 
     Zit.prototype.inHazard = function (hazard) {
         var location = this.roundLocation();
-        if (this.hazardCheck(hazard, SIZE / 2, 0, location) || thus.hazardCheck(hazard, 0, SIZE / 2, location)) {
+        if (this.hazardCheck(hazard, SIZE / 2, 0, location) || this.hazardCheck(hazard, 0, SIZE / 2, location)) {
             return true;
         }
         return this.overlapsCorner(hazard, true, true) ||
@@ -258,8 +258,8 @@
     };
 
     Zit.prototype.hazardCheck = function (hazard, widthBuffer, heightBuffer, location) {
-        hazard.inflate(widthBuffer, heightBuffer);
-        return hazard.contains(location);
+        var expanded = hazard.inflated(widthBuffer, heightBuffer);
+        return expanded.contains(location);
     };
 
     Zit.prototype.tilesInCurrentColumns = function (columns) {

@@ -251,11 +251,11 @@ var LINEAR = (function () {
         return linear.intersectSegmentsPDT(start1, d1, start2, d2, intersection, COLINEAR_TOLERANCE);
     };
     
-    linear.intersectSegmentsPPT = function (start1, end1, start2, end2, tolerance) {
+    linear.intersectSegmentsPPT = function (start1, end1, start2, end2, intersection, tolerance) {
         return linear.intersectSegmentsPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection, tolerance);
     };
     
-    linear.intersectSegmentsPP = function (start1, end1, start2, end2) {
+    linear.intersectSegmentsPP = function (start1, end1, start2, end2, intersection) {
         return linear.intersectSegmentsPD(start1, subVectors(end1, start1), start2, subVectors(end2, start2), intersection, COLINEAR_TOLERANCE);
     };
     
@@ -290,52 +290,52 @@ var LINEAR = (function () {
     };
     
     Segment.prototype.length = function () {
-        return linear.pointDistance(end, start);
+        return linear.pointDistance(this.end, this.start);
     };
     
     Segment.prototype.intersects = function(other) {
-        return linear.segmentsIntersectPP(start, end, other.start, other.end);
+        return linear.segmentsIntersectPP(this.start, this.end, other.start, other.end);
     };
     
     Segment.prototype.intersectsT = function(other, tolerance) {
-        return linear.segmentsIntersectPPT(start, end, other.start, other.end, tolerance);
+        return linear.segmentsIntersectPPT(this.start, this.end, other.start, other.end, tolerance);
     };
     
     Segment.prototype.findIntersection = function(other, intersection) {
-        return linear.intersectSegmentsPP(start, end, other.start, other.end, intersection);
+        return linear.intersectSegmentsPP(this.start, this.end, other.start, other.end, intersection);
     };
     
     Segment.prototype.findIntersectionT = function(other, tolerance, intersection) {
-        return linear.intersectSegmentsPPT(start, end, other.start, other.end, tolerance, intersection);
+        return linear.intersectSegmentsPPT(this.start, this.end, other.start, other.end, tolerance, intersection);
     };
     
     Segment.prototype.extendAtStart = function (length) {
-        var start = this.start.clone();
-        start.addScaled(this.direction(), -length);
-        return new Segment(start, this.end);
+        var s = this.start.clone();
+        s.addScaled(this.direction(), -length);
+        return new Segment(s, this.end);
     };
     
     Segment.prototype.extendAtEnd = function (length) {
-        var end = this.end.clone();
-        end.addScaled(this.direction(), length);
-        return new Segment(this.start, end);
+        var e = this.end.clone();
+        e.addScaled(this.direction(), length);
+        return new Segment(this.start, e);
     };
 
     Segment.prototype.extendBoth = function (length) {
-        var start = this.start.clone(),
-            end = this.end.clone(),
+        var s = this.start.clone(),
+            e = this.end.clone(),
             dir = this.direction();
-        start.addScaled(dir, -length);
-        end.addScaled(dir, length);
-        return new Segment(start, end);
+        s.addScaled(dir, -length);
+        e.addScaled(dir, length);
+        return new Segment(s, e);
     };
 
     Segment.prototype.shift = function (offset) {
-        var start = this.start.clone(),
-            end = this.end.clone();
-        start.add(offset);
-        end.add(offset);
-        return new Segment(start, end);
+        var s = this.start.clone(),
+            e = this.end.clone();
+        s.add(offset);
+        e.add(offset);
+        return new Segment(s, e);
     };
     
     Segment.prototype.closestPoint = function (center) {
@@ -352,7 +352,6 @@ var LINEAR = (function () {
         if (fromStart.dot(dir) >= 0 && fromEnd.dot(-dir) >= 0) {
             return { point: closest, atEnd: false };
         }
-        atEnd = true;
         if (linear.pointDistanceSq(center, this.start) < linear.pointDistanceSq(center, this.end)) {
             return { point: this.start, atEnd: true };
         } else {
@@ -375,8 +374,8 @@ var LINEAR = (function () {
         return this.left <= p.x && p.x <= this.right && this.top <= p.y && p.y <= this.bottom;
     };
     
-    AABox.prototype.inflated = function(size) {
-        return new AABox(this.left - size, this.top - size, width + 2 * size, height + 2 * size);
+    AABox.prototype.inflated = function(w, h) {
+        return new AABox(this.left - w, this.top - h, this.width + 2 * w, this.height + 2 * h);
     };
     
     linear.AABox = AABox;

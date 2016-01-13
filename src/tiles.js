@@ -103,6 +103,7 @@
         if (this.hasPart(Parts.SpikesDown)) {
             boxes.push(new LINEAR.AABox(this.left + SPIKES_EDGE, this.top + GIRDER_WIDTH, this.right() - this.left - 2 * SPIKES_EDGE, SPIKES_SIZE));
         }
+        return boxes;
     };
 
     Tile.prototype.home = function (size) {
@@ -211,7 +212,7 @@
     };
 
     Column.prototype.inColumn = function (x) {
-        return this.left <= x && x <= this.right;
+        return this.left <= x && x <= this.right();
     };
 
     Column.prototype.moveUp = function () {
