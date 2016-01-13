@@ -513,6 +513,7 @@
             top = LEFT_DISPLAY_TOP;
                     
         context.textAlign = "center";
+        context.fillStyle = "rgb(0,0,196)";
             
         drawTextCentered(context, TITLE_FONT, "Zits:", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
         top += TITLE_HEIGHT;
