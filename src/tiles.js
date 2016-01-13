@@ -2,20 +2,35 @@
     "use strict";
 
     var Parts = {
-        Empty : 0,
-        Flat : 1,
-        SlantUp : 2,
-        SlantDown : 4,
-        TransitionTop : 8,
-        TransitionBottom : 16,
-        Block : 32,
-        SpikesUp : 64,
-        SpikesDown : 128,
-        Start : 256,
-        End : 512
-    };
-    
-    var PART_NAMES = [];
+            Empty : 0,
+            Flat : 1,
+            SlantUp : 2,
+            SlantDown : 4,
+            TransitionTop : 8,
+            TransitionBottom : 16,
+            Block : 32,
+            SpikesUp : 64,
+            SpikesDown : 128,
+            Start : 256,
+            End : 512
+        },
+        PART_NAMES = [],
+        PART_VALUES = {},
+        ALL_PARTS = [],
+        IMAGES = [],
+        TILE_SIZE = 50,
+        GIRDER_WIDTH = 3,
+        TILE_DRAW_OFFSET = 5,
+        TRANSITION_SLOPE_FRACTION = 0.4,
+        TRANSITION_SLOPE_GRADE = 0.5,
+        TRANSITION_SLOPE_RUN = TILE_SIZE * TRANSITION_SLOPE_FRACTION,
+        TRANSITION_SLOPE_RISE = TRANSITION_SLOPE_RUN * TRANSITION_SLOPE_GRADE,
+        TRANSITION_ARC_STEPS = 2,
+        SPIKES_SIZE = TILE_SIZE / 4,
+        SPIKES_EDGE = TILE_SIZE / 10,
+        MOVE_SIZE = 5;
+        tileBatch = new ImageBatch("images/");
+        
     PART_NAMES[Parts.Empty] = "Empty";
     PART_NAMES[Parts.Flat] = "Flat";
     PART_NAMES[Parts.SlantUp] = "SlantUp";
@@ -27,12 +42,7 @@
     PART_NAMES[Parts.SpikesDown] = "SpikesDown";
     PART_NAMES[Parts.Start] = "Start";
     PART_NAMES[Parts.End] = "End";
-    var PART_VALUES = {};
-    
-    var ALL_PARTS[];
-    var IMAGES = [];
 
-    var tileBatch = new ImageBatch("images/");
     (function () {
         for (var p in Parts) {
             if (Parts.hasOwnProperty(p)) {
@@ -44,18 +54,6 @@
         tileBatch.commit();
     }());
     
-    var TILE_SIZE = 50,
-        GIRDER_WIDTH = 3,
-        TILE_DRAW_OFFSET = 5,
-        TRANSITION_SLOPE_FRACTION = 0.4,
-        TRANSITION_SLOPE_GRADE = 0.5,
-        TRANSITION_SLOPE_RUN = TILE_SIZE * TRANSITION_SLOPE_FRACTION,
-        TRANSITION_SLOPE_RISE = TRANSITION_SLOPE_RUN * TRANSITION_SLOPE_GRADE,
-        TRANSITION_ARC_STEPS = 2,
-        SPIKES_SIZE = TILE_SIZE / 4,
-        SPIKES_EDGE = TILE_SIZE / 10,
-        MOVE_SIZE = 5;
-
     function Tile(parts, left, top) {
         this.parts = Parts.empty;
         for (var i = 0; i < parts.length; ++i) {
@@ -63,10 +61,10 @@
         }
         this.left = left;
         this.top = top;
-    };
+    }
     
     Tile.prototype.hasPart = function (part) {
-        return (this.parts & part) != 0;
+        return (this.parts & part) !== 0;
     };
     
     Tile.prototype.bottom = function () {
@@ -92,22 +90,16 @@
             result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.top + GIRDER_WIDTH));
         }
         if (this.hasPart(Parts.TransitionTop)) {
-            var platformEnd = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom() - GIRDER_WIDTH - TRANSITION_SLOPE_RISE));
-            result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, platformEnd.X, platformEnd.Y);
-            var center = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom());
-            foreach (Geom.LineSegment segment in ArcSegments(center, platformEnd, Math.PI / 2, TRANSITION_ARC_STEPS))
-            {
-                yield return segment;
-            }
+            var platformEnd = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom() - GIRDER_WIDTH - TRANSITION_SLOPE_RISE);
+            result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, platformEnd.X, platformEnd.Y));
+            var topCenter = new Vector(this.left + TRANSITION_SLOPE_RUN, this.bottom());
+            makeArcSegments(topCenter, platformEnd, Math.PI / 2, TRANSITION_ARC_STEPS, result);
         }
         if (this.hasPart(Parts.TransitionBottom)) {
-            var center = new Vector(this.left + TRANSITION_SLOPE_RUN, this.top);
+            var bottomCenter = new Vector(this.left + TRANSITION_SLOPE_RUN, this.top);
             var radius = GIRDER_WIDTH + TRANSITION_SLOPE_RISE;
             var arcStart = new Vector(this.left + TRANSITION_SLOPE_RUN + radius, this.top);
-            foreach (Geom.LineSegment segment in ArcSegments(center, arcStart, Math.PI / 2, TRANSITION_ARC_STEPS))
-            {
-                yield return segment;
-            }
+            makeArcSegments(bottomCenter, arcStart, Math.PI / 2, TRANSITION_ARC_STEPS, result);
             result.push(new LINEAR.Segment(this.left + TRANSITION_SLOPE_RUN, this.top + radius, this.left, this.top + GIRDER_WIDTH));
         }
         return result;
@@ -134,8 +126,7 @@
         return null;
     };
 
-    Tile.prototype.arcSegments(segments, center, startPoint, segmentAngle, steps)
-    {
+    Tile.prototype.makeArcSegments = function(center, startPoint, segmentAngle, steps, segments) {
         var angleStep = -segmentAngle / steps,
             startSpoke = LINEAR.subVectors(startPoint, center),
             startAngle = Math.atan2(-startSpoke.Y, startSpoke.X),
@@ -169,7 +160,7 @@
 
     Tile.prototype.drawDiagnostics = function(context) {
         var segments = this.platforms();
-        for (var i = 0; i < segments, ++i) {
+        for (var i = 0; i < segments; ++i) {
             var platform = segments[i];
             ctx.beginPath();
             ctx.moveTo(i.start);
@@ -187,7 +178,7 @@
         tiles.push(this.parts);
     };
 
-    Tile.prototype.togglePart(part) {
+    Tile.prototype.togglePart = function(part) {
         this.parts ^= part;
     };
     
@@ -208,7 +199,7 @@
         for (var i = 0; i < this.tiles.length; ++i) {
             this.tiles[i].draw(context);
         }
-    }
+    };
 
     Column.prototype.indexOf = function (tile) {
         for (var i = 0; i < this.tiles.length; ++i) {
@@ -229,13 +220,13 @@
 
     Column.prototype.right = function () {
         return this.left + TILE_SIZE;
-    }
+    };
 
     Column.prototype.moving = function() {
         return this.movingSteps > 0;
-    }
+    };
 
-    Column.prototype.inColumn(x) {
+    Column.prototype.inColumn = function(x) {
         return this.left <= x && x <= this.right;
     };
 
@@ -264,9 +255,9 @@
             }
         }
         return delta;
-    }
+    };
 
-    Column.prototype.store(columns) {
+    Column.prototype.store = function (columns) {
         var column = {
             locked: this.locked,
             tiles: []
