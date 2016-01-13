@@ -52,7 +52,7 @@ var INPUT = (function (LINEAR) {
         var copy = new KeyboardState();
         for (var p in this.pressed) {
             if (this.pressed.hasOwnProperty(p)) {
-                copy.pressed = this.pressed[p];
+                copy.pressed[p] = this.pressed[p];
             }
         }
         return copy;
