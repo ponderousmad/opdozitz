@@ -270,7 +270,7 @@ var LINEAR = (function () {
     }
     
     Segment.prototype.direction = function () {
-        var dir = subVectors(end, start);
+        var dir = subVectors(this.end, this.start);
         dir.normalize();
         return dir;
     };
@@ -278,11 +278,12 @@ var LINEAR = (function () {
     Segment.prototype.normal = function () {
         var dir = this.direction();
         dir.set(-dir.y, dir.x);
+        return dir;
     };
     
     Segment.prototype.directedNormal = function () {
         var normal = this.normal();
-        if (determinant(dir, normal) >= 0) {
+        if (determinant(this.direction(), normal) >= 0) {
             normal.scale(-1);
         }
         return normal;

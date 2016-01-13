@@ -26,13 +26,13 @@
         spawnSound = new SoundEffect("audio/Ding.wav");
 
     function Zit(tile, speedFactor) {
-        var platform = tile.platform(0);
+        var platform = tile.platforms()[0];
         
         this.speedFactor = speedFactor;
         this.contact = platform.start.clone();
         this.contact.addScaled(platform.direction(), RADIUS);
         this.location = this.contact.clone();
-        this.addScaled(platform.directedNormal(), RADIUS);
+        this.location.addScaled(platform.directedNormal(), RADIUS);
         this.angle = 0;
         this.state = State.Rolling;
         this.fallSpeed = 0;
@@ -67,7 +67,7 @@
             this.checkBoundaries(frame);
         }
 
-        if (this.exploding !== null && exposion.update(elapsed, this.exploding)) {
+        if (this.exploding !== null && explosion.updatePlayback(elapsed, this.exploding)) {
             this.exploding = null;
         }
     };
@@ -86,9 +86,9 @@
             swungLocation = LINEAR.addVectors(this.contact, LINEAR.scaleVector(LINEAR.angleToVector(newAngle), RADIUS)),
     
             top = Math.floor(Math.min(this.location.y, swungLocation.y)) - SIZE,
-            bottom = Math.ceiling(Math.max(this.location.y, swungLocation.y)) + SIZE,
+            bottom = Math.ceil(Math.max(this.location.y, swungLocation.y)) + SIZE,
             left = Math.floor(Math.min(this.location.x, swungLocation.x) - RADIUS),
-            right = Math.ceiling(Math.max(this.location.x, swungLocation.x) + RADIUS),
+            right = Math.ceil(Math.max(this.location.x, swungLocation.x) + RADIUS),
     
             closestPlatform = null,
             newContact = this.contact,
@@ -145,7 +145,7 @@
         }
     };
 
-    Zit.updateFalling = function (columns, elapsed) {
+    Zit.prototype.updateFalling = function (columns, elapsed) {
         this.fallSpeed += elapsed * FALL_FORCE;
 
         var fallLocation = new LINEAR.Vector(this.location.x, this.location.y + this.fallSpeed),
@@ -232,7 +232,7 @@
         }
     };
 
-    Zit.isCeiling = function (directedNormal) {
+    Zit.prototype.isCeiling = function (directedNormal) {
         return normalAngle(directedNormal, MINUS_Y) > (Math.PI / 2);
     };
 
@@ -266,9 +266,9 @@
         return this.tilesInColumns(
             columns,
             Math.floor(this.location.x - RADIUS),
-            Math.ceiling(this.location.x + RADIUS),
+            Math.ceil(this.location.x + RADIUS),
             Math.floor(this.location.y - RADIUS),
-            Math.ceiling(this.location.y + RADIUS + Size)
+            Math.ceil(this.location.y + RADIUS + SIZE)
         );
     };
 
@@ -289,6 +289,7 @@
                 }
             }
         }
+        return result;
     };
 
     Zit.prototype.fall = function () {
@@ -306,14 +307,14 @@
         }
     };
 
-    Zit.markHome = function () {
+    Zit.prototype.markHome = function () {
         if (!this.isHome()) {
             this.state = State.Home;
             homeSound.play();
         }
     };
 
-    Zit.draw = function(context) {
+    Zit.prototype.draw = function(context) {
         if (this.isAlive()) {
             context.save();   
             context.rotate(this.angle);

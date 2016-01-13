@@ -38,9 +38,13 @@
     }());
     
     function Tile(parts, left, top) {
-        this.parts = Parts.empty;
-        for (var i = 0; i < parts.length; ++i) {
-            this.parts |= Parts[parts[i]];
+        if (Number.isInteger(parts)) {
+            this.parts = parts;
+        } else {
+            this.parts = Parts.empty;
+            for (var i = 0; i < parts.length; ++i) {
+                this.parts |= Parts[parts[i]];
+            }
         }
         this.left = left;
         this.top = top;
@@ -59,7 +63,7 @@
     };
 
     Tile.prototype.platforms = function () {
-        result = [];
+        var result = [];
         if (this.hasPart(Parts.Flat)) {
             result.push(new LINEAR.Segment(this.left, this.bottom() - GIRDER_WIDTH, this.right(), this.bottom() - GIRDER_WIDTH));
             result.push(new LINEAR.Segment(this.right(), this.bottom() + GIRDER_WIDTH, this.left, this.bottom() + GIRDER_WIDTH));
@@ -102,8 +106,7 @@
     };
 
     Tile.prototype.home = function (size) {
-        if (this.hasPart(Parts.End))
-        {
+        if (this.hasPart(Parts.End)) {
             return new LineSegment.AABox(this.left + size / 4, this.top + GIRDER_WIDTH, size / 2, size);
         }
         return null;
@@ -115,8 +118,7 @@
             startAngle = Math.atan2(-startSpoke.Y, startSpoke.X),
             radius = startSpoke.length();
 
-        for (var i = 1; i <= steps; ++i)
-        {
+        for (var i = 1; i <= steps; ++i) {
             var angle = startAngle + i * angleStep,
                 platformEnd = center.clone(),
                 spoke = LINEAR.angleToVector(angle);
@@ -220,7 +222,7 @@
 
     Column.prototype.moveDown = function () {
         this.movingUp = false;
-        this.tiles.insert(0, this.tiles[this.tiles.length-1].clone(this.tiles[0].top - TILE_SIZE));
+        this.tiles.splice(0, 0, this.tiles[this.tiles.length-1].clone(this.tiles[0].top - TILE_SIZE));
         this.movingSteps = TILE_SIZE;
     };
 
@@ -233,7 +235,7 @@
             }
             this.movingSteps -= MOVE_SIZE;
             if (!this.moving()) {
-                this.tiles.splice(mMovingUp ? 0 : this.tiles.length - 1, 1);
+                this.tiles.splice(this.movingUp ? 0 : this.tiles.length - 1, 1);
             }
         }
         return delta;
@@ -250,5 +252,5 @@
         columns.push(column);
     };
     
-    return { Tile: Tile, TileColumn: Column, Parts: Parts, SIZE: TILE_SIZE, GIRDER_WIDTH: GIRDER_WIDTH };
+    return { Tile: Tile, Column: Column, Parts: Parts, SIZE: TILE_SIZE, GIRDER_WIDTH: GIRDER_WIDTH, DRAW_OFFSET: TILE_DRAW_OFFSET };
 }());

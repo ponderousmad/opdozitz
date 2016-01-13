@@ -70,7 +70,6 @@
         },
         getTimestamp = null,
         lastTime = 0;
-  
     
     (function() {
         imageBatch.commit();
@@ -127,13 +126,14 @@
         levelStartDelay = startDelay ? startDelay : 0;
 
         for (var c = 0; c < data.columns.length; ++c) {
-            var columnData = data.columns[c];
-                tileLocation = COLUMN_Y_OFFSET;
+            var columnData = data.columns[c],
+                tileLocation = COLUMN_Y_OFFSET,
                 column = new TILES.Column(columnLocation, tileLocation, columnData["locked"] == "True");
             for (var t = 0; t < columnData.tiles.length; ++t) {
-                column.add(new TILE.Tile(columnData.tiles[t]["type"], columnLocation, tileLocation));
+                column.add(new TILES.Tile(columnData.tiles[t]["type"], columnLocation, tileLocation));
                 tileLocation += TILES.SIZE;
             }
+            columns.push(column);
             columnLocation += TILES.SIZE;
         }
     }
@@ -155,8 +155,8 @@
         request.open("GET", resource, true);
         request.responseType = "json";
         request.onload = function () {
-            currentLevel = number;
             parseLevel(request.response);
+            currentLevel = number;
             clearLevel();
         };
         request.send();
@@ -268,9 +268,9 @@
                 }
             }
         } else if (isKeyPress(Keys.Right)) {
-            for (var column = selectedColumn + 1; column < mColumns.Count; ++column) {
-                if (!mColumns[column].locked) {
-                    selectedColumn = column;
+            for (var column = selectedColumn + 1; column < columns.length; ++column) {
+                if (!columns[column].locked) {
+                    setSelectedColumn(column);
                     break;
                 }
             }
@@ -446,11 +446,11 @@
             if (editing) {
                 updateEdit();
             } else {
-                updateGameplay(gameTime);
+                updateGameplay(elapsed);
             }
         }
 
-        lastKeyboardState = keyboardState;
+        lastKeyboardState = keyboardState.clone();
         lastTime = now;
     }
 
@@ -483,9 +483,14 @@
         for (var z = 0; z < zits.length; ++z) {
             zits[z].draw(context);
         }
-        var currentColumn = columns[selectedColumn];
         context.drawImage(levelFrame, 0, 0);
-        var cursor = (canMoveCurrent() || currentColumn.moving()) ? selectColumn : selectColumnStuck;
+        
+        if (columns.length == 0) {
+            return;
+        }
+
+        var currentColumn = columns[selectedColumn],
+            cursor = (canMoveCurrent() || currentColumn.moving()) ? selectColumn : selectColumnStuck;
         context.drawImage(cursor, currentColumn.left - TILES.DRAW_OFFSET, currentColumn.top + TILES.SIZE / 2 - TILES.DRAW_OFFSET);
         if (editing) {
             var editTile = currentTile();
