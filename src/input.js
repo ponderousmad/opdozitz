@@ -5,15 +5,17 @@ var INPUT = (function (LINEAR) {
         this.pressed = {};
         var self = this;
         
-        element.onkeydown = function (e) {
-            e = e || window.event;
-            self.pressed[e.keyCode] = true;
-        };
+        if (element) {
+            element.onkeydown = function (e) {
+                e = e || window.event;
+                self.pressed[e.keyCode] = true;
+            };
 
-        element.onkeyup = function (e) {
-            e = e || window.event;
-            delete self.pressed[e.keyCode];
-        };
+            element.onkeyup = function (e) {
+                e = e || window.event;
+                delete self.pressed[e.keyCode];
+            };
+        }
     }
 
     KeyboardState.prototype.isKeyDown = function (keyCode) {
