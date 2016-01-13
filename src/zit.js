@@ -321,9 +321,6 @@
             context.rotate(this.angle);
             context.drawImage(sprite, -RADIUS, -RADIUS, SIZE, SIZE);
             context.restore();
-            if (this.currentTile) {
-                this.currentTile.drawDiagnostics(context);
-            }
         } else if (this.exploding !== null) {
             explosion.draw(context, this.exploding, this.location, EXPLOSION_DRAW_SIZE, EXPLOSION_DRAW_SIZE, true);
         }        
