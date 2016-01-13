@@ -15,7 +15,7 @@
         ZITS_PER_LEVEL = 20,
         MIN_LEVEL = 1,
         MAX_LEVEL = 25,
-        NO_LEVEL = -1;
+        NO_LEVEL = -1,
         ALLOW_EDITS = true,
     
         Instruction = {
@@ -42,7 +42,7 @@
         selectColumnStuck = imageBatch.load("SelectColumnStuck.png"),
         selectTile = imageBatch.load("SelectTile.png"),
     
-        selectedColumn = 1;
+        selectedColumn = 1,
         selectedTile = 0,
         currentLevel = NO_LEVEL,
         levelScores = [],
@@ -390,7 +390,7 @@
     }
 
     function updateEdit() {
-        if (isKeyPress(Keys.Up) {
+        if (isKeyPress(Keys.Up)) {
             selectedTile = Math.Max(0, selectedTile - 1);
         } else if (isKeyPress(Keys.Down)) {
             selectedTile = Math.Min(columns[selectedColumn].length() - 1, selectedTile + 1);
@@ -466,12 +466,12 @@
         return score;
     }
 
-    private void drawTextCentered(context, font, text, top, left, width) {
+    function drawTextCentered(context, font, text, top, left, width) {
         context.font = font;
         context.fillText(text, left + width / 2, top);
     }
     
-    void draw(context) {
+    function draw(context) {
         if (!imageBatch.loaded) {
             return;
         }
@@ -550,6 +550,6 @@
         
         window.setInterval(update, 16);
         
-        draw();
+        drawFrame();
     };
 }(rootURL));
