@@ -126,7 +126,7 @@
         return null;
     };
 
-    Tile.prototype.makeArcSegments = function(center, startPoint, segmentAngle, steps, segments) {
+    Tile.prototype.makeArcSegments = function (center, startPoint, segmentAngle, steps, segments) {
         var angleStep = -segmentAngle / steps,
             startSpoke = LINEAR.subVectors(startPoint, center),
             startAngle = Math.atan2(-startSpoke.Y, startSpoke.X),
@@ -148,7 +148,7 @@
         return new Tile(this.parts, this.left, newTop);
     };
 
-    Tile.prototype.draw = function(context) {
+    Tile.prototype.draw = function (context) {
         var size = TILE_SIZE + 2 * TILE_DRAW_OFFSET;
         for (var i = 0; i < ALL_PARTS.length; ++i) {
             var part = ALL_PARTS[i];
@@ -158,7 +158,7 @@
         }
     };
 
-    Tile.prototype.drawDiagnostics = function(context) {
+    Tile.prototype.drawDiagnostics = function (context) {
         var segments = this.platforms();
         for (var i = 0; i < segments; ++i) {
             var platform = segments[i];
@@ -169,16 +169,16 @@
         }
     };
 
-    Tile.prototype.toString = function() {
+    Tile.prototype.toString = function () {
         return "Location: " + this.left + ", " + this.top + " Parts: " + mParts;
     };
 
-    Tile.prototype.store = function(tiles) {
+    Tile.prototype.store = function (tiles) {
         var partNames = [];
         tiles.push(this.parts);
     };
 
-    Tile.prototype.togglePart = function(part) {
+    Tile.prototype.togglePart = function (part) {
         this.parts ^= part;
     };
     
@@ -222,11 +222,11 @@
         return this.left + TILE_SIZE;
     };
 
-    Column.prototype.moving = function() {
+    Column.prototype.moving = function () {
         return this.movingSteps > 0;
     };
 
-    Column.prototype.inColumn = function(x) {
+    Column.prototype.inColumn = function (x) {
         return this.left <= x && x <= this.right;
     };
 
@@ -242,7 +242,7 @@
         this.movingSteps = TILE_SIZE;
     };
 
-    Column.prototype.update = function(elapsed) {
+    Column.prototype.update = function (elapsed) {
         var delta = 0;
         if (this.movingSteps > 0) {
             delta = this.movingUp ? -MOVE_SIZE : MOVE_SIZE;
