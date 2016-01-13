@@ -498,17 +498,17 @@
         }
 
         var LEFT_DISPLAY_EDGE = 10,
-            LEFT_DISPLAY_TOP = 255,
+            LEFT_DISPLAY_TOP = 265,
             RIGHT_DISPLAY_EDGE = 738,
-            RIGHT_DISPLAY_TOP = 28,
+            RIGHT_DISPLAY_TOP = 38,
             LINE_HEIGHT = 18,
             SCORE_HEIGHT = 22,
             TITLE_HEIGHT = 14,
             DISPLAYS_WIDTH = 55,
             MILLIS_PER_SECOND = 1000,
-            TITLE_FONT = "15px monospace",
-            DISPLAY_FONT = "12px monospace",
-            SCORE_FONT = "20px monospace",
+            TITLE_FONT = "11px monospace",
+            DISPLAY_FONT = "11px monospace",
+            SCORE_FONT = "16px monospace",
             zitSpawnRemaining = Math.max(0, zitSpawnInterval() - sinceLastSpawn) / MILLIS_PER_SECOND,
             top = LEFT_DISPLAY_TOP;
                     
@@ -521,7 +521,7 @@
 
         drawTextCentered(context, TITLE_FONT, "Spawn In:", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
         top += TITLE_HEIGHT;
-        drawTextCentered(context, DISPLAY_FONT, zits.length < ZITS_PER_LEVEL ? zitSpawnRemaining.toString() : "----", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
+        drawTextCentered(context, DISPLAY_FONT, zits.length < ZITS_PER_LEVEL ? zitSpawnRemaining.toFixed(2) : "----", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
         top += LINE_HEIGHT;
 
         drawTextCentered(context, TITLE_FONT, "Home:", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
