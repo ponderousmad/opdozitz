@@ -261,8 +261,8 @@ var LINEAR = (function () {
     
     function Segment(a, b, c, d) {
         if (isNaN(a)) {
-            this.start = start;
-            this.end = end;
+            this.start = a;
+            this.end = b;
         } else {
             this.start = new Vector(a, b);
             this.end = new Vector(c, d);
