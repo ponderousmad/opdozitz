@@ -136,7 +136,7 @@
                 }
             } else {
                 this.location.copy(this.contact);
-                this.addScaled(closestPlatform.directedNormal(), RADIUS);
+                this.location.addScaled(closestPlatform.directedNormal(), RADIUS);
             }
             this.currentTile = closestTile;
         } else {
@@ -314,16 +314,19 @@
         }
     };
 
-    Zit.prototype.draw = function(context) {
+    Zit.prototype.draw = function (context) {
         if (this.isAlive()) {
             context.save();
             context.translate(this.location.x, this.location.y);
             context.rotate(this.angle);
             context.drawImage(sprite, -RADIUS, -RADIUS, SIZE, SIZE);
             context.restore();
+            if (this.currentTile) {
+                this.currentTile.drawDiagnostics(context);
+            }
         } else if (this.exploding !== null) {
             explosion.draw(context, this.exploding, this.location, EXPLOSION_DRAW_SIZE, EXPLOSION_DRAW_SIZE, true);
-        }
+        }        
     };
         
     Zit.prototype.isRolling = function () { return this.state === State.Rolling; };

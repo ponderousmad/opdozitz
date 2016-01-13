@@ -339,17 +339,17 @@ var LINEAR = (function () {
     };
     
     Segment.prototype.closestPoint = function (center) {
-        var closest = new Vector(0,0),
+        var closest = new Vector(0, 0),
             normal = this.normal(),
             dir = this.direction();
-        if (!linear.linesIntersectPD(this.start, dir, center, normal, closest)) {
+        if (!linear.intersectLinesPD(this.start, dir, center, normal, closest)) {
             // Degenerate line segment.
             return { point: this.start, atEnd: true };
         }
         // Is the closest point inside the line segment?
         var fromStart = linear.subVectors(closest, this.start),
             fromEnd = linear.subVectors(closest, this.end);
-        if (fromStart.dot(dir) >= 0 && fromEnd.dot(-dir) >= 0) {
+        if (fromStart.dot(dir) >= 0 && fromEnd.dot(dir) < 0) {
             return { point: closest, atEnd: false };
         }
         if (linear.pointDistanceSq(center, this.start) < linear.pointDistanceSq(center, this.end)) {
