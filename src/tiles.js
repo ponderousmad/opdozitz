@@ -108,7 +108,7 @@
 
     Tile.prototype.home = function (size) {
         if (this.hasPart(Parts.End)) {
-            return new LineSegment.AABox(this.left + size / 4, this.top + GIRDER_WIDTH, size / 2, size);
+            return new LINEAR.AABox(this.left + size / 4, this.top + GIRDER_WIDTH, size / 2, size);
         }
         return null;
     };
