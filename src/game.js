@@ -422,7 +422,7 @@
     
     function update() {
         var now = getTimestamp(),
-            elapsed = now - lastTime;
+            elapsed = Math.min(now - lastTime, 32);
         
         if (instruction !== null) {
             updateInstruction(elapsed);
