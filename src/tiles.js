@@ -14,9 +14,6 @@
             Start : 256,
             End : 512
         },
-        PART_NAMES = [],
-        PART_VALUES = {},
-        ALL_PARTS = [],
         IMAGES = [],
         TILE_SIZE = 50,
         GIRDER_WIDTH = 3,
@@ -28,27 +25,13 @@
         TRANSITION_ARC_STEPS = 2,
         SPIKES_SIZE = TILE_SIZE / 4,
         SPIKES_EDGE = TILE_SIZE / 10,
-        MOVE_SIZE = 5;
+        MOVE_SIZE = 5,
         tileBatch = new ImageBatch("images/");
-        
-    PART_NAMES[Parts.Empty] = "Empty";
-    PART_NAMES[Parts.Flat] = "Flat";
-    PART_NAMES[Parts.SlantUp] = "SlantUp";
-    PART_NAMES[Parts.SlantDown] = "SlantDown";
-    PART_NAMES[Parts.TransitionTop] = "TransitionTop";
-    PART_NAMES[Parts.TransitionBottom] = "TransitionBottom";
-    PART_NAMES[Parts.Block] = "Block";
-    PART_NAMES[Parts.SpikesUp] = "SpikesUp";
-    PART_NAMES[Parts.SpikesDown] = "SpikesDown";
-    PART_NAMES[Parts.Start] = "Start";
-    PART_NAMES[Parts.End] = "End";
 
     (function () {
         for (var p in Parts) {
             if (Parts.hasOwnProperty(p)) {
-                ALL_PARTS.push(p);
-                PART_VALUES[PART_NAMES[p]] = p;
-                IMAGES[p] = tileBatch.load("Tile" + PART_NAMES[p] + ".png");
+                IMAGES[p] = tileBatch.load("Tile" + p + ".png");
             }
         }
         tileBatch.commit();
@@ -57,7 +40,7 @@
     function Tile(parts, left, top) {
         this.parts = Parts.empty;
         for (var i = 0; i < parts.length; ++i) {
-            this.parts |= PART_VALUES[parts[i]];
+            this.parts |= Parts[parts[i]];
         }
         this.left = left;
         this.top = top;
@@ -150,9 +133,8 @@
 
     Tile.prototype.draw = function (context) {
         var size = TILE_SIZE + 2 * TILE_DRAW_OFFSET;
-        for (var i = 0; i < ALL_PARTS.length; ++i) {
-            var part = ALL_PARTS[i];
-            if (this.hasPart(part)) {
+        for (var part in Parts) {
+            if (Parts.hasOwnProperty(part) && this.hasPart(Parts[part])) {
                 context.drawImage(IMAGES[part], this.left - TILE_DRAW_OFFSET, this.top - TILE_DRAW_OFFSET, size, size);
             }
         }
