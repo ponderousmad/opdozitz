@@ -3,7 +3,7 @@
 
     var COLUMN_X_OFFSET = 25,
         COLUMN_Y_OFFSET = 0,
-        FRAME_RECT = new LINEAR.AABox(25, 25, 550, 750),
+        FRAME_RECT = new LINEAR.AABox(25, 25, 750, 550),
     
         BASE_SPAWN_INTERVAL = 3000,
         MIN_SPAWN_INTERVAL = 400,
@@ -294,7 +294,7 @@
         var home = 0;
         for (var z = 0; z < zits.length; ++z) {
             if (zits[z].isHome()) {
-                ++count;
+                ++home;
             }
         }
         return home;
@@ -475,6 +475,7 @@
         if (!imageBatch.loaded) {
             return;
         }
+        context.save();
         context.drawImage(background, 0, 0);
         context.strokeStyle = "rgb(255,0,0)";
 
@@ -487,6 +488,7 @@
         context.drawImage(levelFrame, 0, 0);
         
         if (columns.length == 0) {
+            context.restore();
             return;
         }
 
@@ -541,6 +543,7 @@
         if (instruction !== null) {
             context.drawImage(instructions[instruction], 0, 0);
         }
+        context.restore();
     }
     
     window.onload = function(e) {
