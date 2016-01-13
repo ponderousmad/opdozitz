@@ -6,6 +6,6 @@ Basically you need to shepard a bunch of dumb rolling robots along platforms by 
 
 The trick is that the robots can roll along both tops and bottoms of platforms.
 
-Implemented using XNA 3.1
+Recently ported to HTML/canvas.
 
-Automatically exported from code.google.com/p/opdozitz
+Feel free to [give it a try!](http://ponderousmad.com/opdozitz/game.html)
