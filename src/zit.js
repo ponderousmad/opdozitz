@@ -150,7 +150,7 @@
 
         var fallLocation = new LINEAR.Vector(this.location.x, this.location.y + this.fallSpeed),
             closestPlatform = null,
-            newContact = new LINEAR.Vector(0,0),
+            newContact = new LINEAR.Vector(0, 0),
             contactTile = null;
         if (this.fallSpeed < FATAL_VELOCITY) {
             var highestIntersection = fallLocation.y,
@@ -316,9 +316,10 @@
 
     Zit.prototype.draw = function(context) {
         if (this.isAlive()) {
-            context.save();   
+            context.save();
+            context.translate(this.location.x, this.location.y);
             context.rotate(this.angle);
-            context.drawImage(sprite, this.location.x, this.location.y, SIZE, SIZE);
+            context.drawImage(sprite, -RADIUS, -RADIUS, SIZE, SIZE);
             context.restore();
         } else if (this.exploding !== null) {
             explosion.draw(context, this.exploding, this.location, EXPLOSION_DRAW_SIZE, EXPLOSION_DRAW_SIZE, true);
