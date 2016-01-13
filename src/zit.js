@@ -1,30 +1,31 @@
 ﻿var Zit = (function() {
     var State =  {
-        Rolling: 0,
-        Dead: 1,
-        Falling: 2,
-        Home: 3
-    };
+            Rolling: 0,
+            Dead: 1,
+            Falling: 2,
+            Home: 3
+        },
     
-    var SIZE = 20;
-    var RADIUS = SIZE / 2.0;
-    var ANGLE_INCREMENT = 0.006;
-    var FALL_FORCE = 0.03;
-    var FATAL_VELOCITY = 9;
-    var EXPLOSION_TIME_PER_FRAME = 80;
-    var EXPLOSION_DRAW_SIZE = SIZE * 2;
-    // Empirically determined to elimnate spurrious physics results.
-    var MAX_ANGLE_STEP = 0.7;
+        SIZE = 20,
+        RADIUS = SIZE / 2.0,
+        ANGLE_INCREMENT = 0.006,
+        FALL_FORCE = 0.03,
+        FATAL_VELOCITY = 9,
+        EXPLOSION_TIME_PER_FRAME = 80,
+        EXPLOSION_DRAW_SIZE = SIZE * 2,
+        // Empirically determined to elimnate spurrious physics results.
+        MAX_ANGLE_STEP = 0.7,
+        MINUS_Y = new LINEAR.Vector(0, -1),
     
-    var zitBatch = new ImageBatch("images/");
-    var sprite = zitBatch.load("Zit.png");
-    var explosion = new Flipbook(zitBatch, "Explode", 9, 2);
-    var explodeSound = SoundEffect("/opdozitz/audio/Splat.wav");
-    var landSound = SoundEffect("/opdozitz/audio/Pip.wav");
-    var homeSound = SoundEffect("/opdozitz/audio/Blip.wav");
-    var spawnSound = SoundEffect("/opdozitz/audio/Ding.wav");
+        zitBatch = new ImageBatch("images/"),
+        sprite = zitBatch.load("Zit.png"),
+        explosion = new Flipbook(zitBatch, "Explode", 9, 2),
+        explodeSound = new SoundEffect("audio/Splat.wav"),
+        landSound = new SoundEffect("audio/Pip.wav"),
+        homeSound = new SoundEffect("audio/Blip.wav"),
+        spawnSound = new SoundEffect("audio/Ding.wav");
 
-    var Zit = function(tile, speedFactor) {
+    function Zit(tile, speedFactor) {
         var platform = tile.platform(0);
         
         this.speedFactor = speedFactor;
@@ -231,9 +232,8 @@
         }
     };
 
-    var minusY = new Vector(0, -1);
     Zit.isCeiling = function (directedNormal) {
-        return normalAngle(directedNormal, minusY) > (Math.PI / 2);
+        return normalAngle(directedNormal, MINUS_Y) > (Math.PI / 2);
     };
 
     Zit.prototype.inHazard = function (hazard) {
