@@ -522,7 +522,7 @@
 
         drawTextCentered(context, TITLE_FONT, "Spawn In:", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
         top += TITLE_HEIGHT;
-        drawTextCentered(context, DISPLAY_FONT, zits.length < ZITS_PER_LEVEL ? zitSpawnRemaining.toFixed(2) : "----", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
+        drawTextCentered(context, DISPLAY_FONT, zits.length < ZITS_PER_LEVEL ? (zitSpawnRemaining.toFixed(1) + " sec") : "----", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
         top += LINE_HEIGHT;
 
         drawTextCentered(context, TITLE_FONT, "Home:", top, LEFT_DISPLAY_EDGE, DISPLAYS_WIDTH);
