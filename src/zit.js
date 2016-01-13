@@ -163,7 +163,7 @@
                     if (this.isCeiling(platform.directedNormal())) {
                         continue;
                     }
-                    var offsetVector = LINEAR.scaleVector(platform.directedNormal(), RADIUS),
+                    var offsetVector = LINEAR.scaleVector(platform.directedNormal(), -RADIUS),
                         offsetStart = LINEAR.addVectors(fallLocation, offsetVector),
                         offsetEnd = LINEAR.addVectors(offsetStart.clone(), new LINEAR.Vector(0,-SIZE)),
                         contact = new LINEAR.Vector(),
