@@ -153,9 +153,9 @@
         currentLevel = NO_LEVEL;
         
         request.open("GET", resource, true);
-        request.responseType = "json";
+        request.responseType = "text";
         request.onload = function () {
-            parseLevel(request.response);
+            parseLevel(JSON.parse(request.response));
             currentLevel = number;
             clearLevel();
         };
