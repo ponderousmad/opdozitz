@@ -3,6 +3,7 @@ var INPUT = (function (LINEAR) {
 
     function KeyboardState(element) {
         this.pressed = {};
+        this.lastPressed = {};
         var self = this;
         
         if (element) {
@@ -22,6 +23,10 @@ var INPUT = (function (LINEAR) {
         return this.pressed[keyCode] ? true : false;
     };
 
+    KeyboardState.prototype.wasKeyPressed = function (keyCode) {
+        return this.pressed[keyCode] ? !this.wasKeyPressed[keyCode] : false;
+    };
+
     KeyboardState.prototype.isShiftDown = function () {
         return this.isKeyDown(16);
     };
@@ -38,6 +43,10 @@ var INPUT = (function (LINEAR) {
         return this.isKeyDown(ascii.charCodeAt());
     };
        
+    KeyboardState.prototype.wasAsciiPressed = function (ascii) {
+        return this.wasKeyPressed(ascii.charCodeAt());
+    };
+       
     KeyboardState.prototype.keysDown = function () {
         var count = 0;
         for (var p in this.pressed) {
@@ -48,32 +57,51 @@ var INPUT = (function (LINEAR) {
         return count;
     };
     
-    KeyboardState.prototype.clone = function () {
-        var copy = new KeyboardState();
+    KeyboardState.prototype.postUpdate = function () {
+        this.lastPressed = {};
         for (var p in this.pressed) {
             if (this.pressed.hasOwnProperty(p)) {
-                copy.pressed[p] = this.pressed[p];
+                this.lastPressed[p] = this.pressed[p];
             }
         }
-        return copy;
-    }
+    };
 
     function MouseState(element) {
         this.location = new LINEAR.Vector(0, 0);
         this.left = false;
         this.middle = false;
         this.right = false;
+        this.wasLeft = false;
+        this.wasMiddle = false;
+        this.wasRight = false;
+        this.leftDown = false;
+        this.middleDown = false;
+        this.rightDown = false;
         this.shift = false;
         this.ctrl = false;
         this.alt = false;
         
         var self = this;
         var updateState = function (event) {
-            var bounds = element.getBoundingClientRect();
+            var bounds = element.getBoundingClientRect(),
+                left = (event.buttons & 1) == 1,
+                right = (event.buttons & 2) == 2,
+                middle = (event.buttons & 4) == 4;
+
             self.location.set(event.clientX - bounds.left, event.clientY - bounds.top);
-            self.left = (event.buttons & 1) == 1;
-            self.right = (event.buttons & 2) == 2;
-            self.middle = (event.buttons & 4) == 4;
+                      
+            self.wasLeft = self.left;
+            self.wasRight = self.right;
+            self.wasMiddle = self.middle;
+            
+            self.left = left;
+            self.right = right;
+            self.middle = middle;
+
+            self.leftDown = self.leftDown || (self.left && !self.wasLeft);
+            self.middleDown = self.middleDown || (self.middle && !self.wasMiddle);
+            self.rightDown = self.rightDown || (self.right && !self.wasRight);            
+
             self.shift = event.shiftKey;
             self.ctrl = event.ctrlKey;
             self.altKey = event.altKey;
@@ -84,8 +112,39 @@ var INPUT = (function (LINEAR) {
         element.addEventListener("mouseup", updateState);
     }
     
+    MouseState.prototype.postUpdate = function () {
+        this.leftDown = false;
+        this.middleDown = false;
+        this.rightDown = false;
+    };
+    
+    function TouchState(element) {
+        this.touches = [];
+        
+        var self = this;
+        var handleTouch = function(e) {
+            self.touches = event.touches;
+            e.preventDefault();
+        };
+
+        element.addEventListener("touchstart", handleTouch);
+        element.addEventListener("touchend", handleTouch);
+        element.addEventListener("touchmove", handleTouch);
+        element.addEventListener("touchcancel", handleTouch);
+    }
+    
+    TouchState.prototype.getTouch = function (id) {
+        for (var t = 0; t < this.touches.length; ++t) {
+            if (this.touches[t].identifier == id) {
+                return this.touches[t];
+            }
+        }
+        return null;
+    };
+    
     return {
         KeyboardState: KeyboardState,
-        MouseState: MouseState
+        MouseState: MouseState,
+        TouchState: TouchState
     };
 }(LINEAR));
