@@ -277,6 +277,15 @@
             }
         }
         
+        if (touchDown !== null) {
+            var matchingTouch = touchState.getTouch(touchDown.id);
+            if (matchingTouch === null) {
+                touchDown = null;
+            } else {
+                touchDown.y = matchingTouch.clientY;
+            }
+        }
+        
         if (touchDown === null && touchState.touches.length > 0) {
             var touch = touchState.touches[0];
             var x = touch.clientX;
@@ -284,9 +293,13 @@
                 if (!columns[c].locked) {
                     if (columns[c].inColumn(x)) {
                         setSelectedColumn(c);
+                        touchDown = {
+                            id: touch.identifier,
+                            y: touch.clientY,
+                            lastShift: touch.clientY
+                        };
                     }
                 }
-                
             }
         }
     }
@@ -341,6 +354,15 @@
         } else if (keyboardState.isKeyDown(Keys.Down)) {
             if (canMoveCurrent()) {
                 columns[selectedColumn].moveDown();
+            }
+        } else if(canMoveCurrent() && touchDown !== null) {
+            var touchDelta = touchDown.y - touchDown.lastShift;
+            if (touchDelta < -TILES.SIZE) {
+                columns[selectedColumn].moveUp();
+                touchDown.lastShift -= TILES.SIZE;
+            } else if(touchDelta > TILES.SIZE) {
+                columns[selectedColumn].moveDown();
+                touchDown.lastShift += TILES.SIZE;
             }
         }
 
