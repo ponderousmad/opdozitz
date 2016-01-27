@@ -20,10 +20,10 @@
         zitBatch = new ImageBatch("images/"),
         sprite = zitBatch.load("Zit.png"),
         explosion = new Flipbook(zitBatch, "Explode", 9, 2),
-        explodeSound = new SoundEffect("audio/Splat.wav"),
-        landSound = new SoundEffect("audio/Pip.wav"),
-        homeSound = new SoundEffect("audio/Blip.wav"),
-        spawnSound = new SoundEffect("audio/Ding.wav");
+        explodeSound = new AUDIO.SoundEffect("audio/Splat.wav"),
+        landSound = new AUDIO.SoundEffect("audio/Pip.wav"),
+        homeSound = new AUDIO.SoundEffect("audio/Blip.wav"),
+        spawnSound = new AUDIO.SoundEffect("audio/Ding.wav");
 
     function Zit(tile, speedFactor) {
         var platform = tile.platforms()[0];

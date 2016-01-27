@@ -129,6 +129,7 @@ var INPUT = (function (LINEAR) {
         
         var self = this;
         var handleTouch = function(e) {
+            AUDIO.noteOn();
             self.touches = event.touches;
             e.preventDefault();
         };
