@@ -93,12 +93,11 @@
         lastTime = getTimestamp();
     })();
     
-    function OrderLevels() {
+    function orderLevels() {
         var levels = [];
         for (var i = MIN_LEVEL; i <= MAX_LEVEL; ++i) {
-            var level = new Level();
-            level.LoadLevel(i);
-            levels.push(level);
+            levels.push(new Level());
+            levels[levels.length - 1].LoadLevel(i);
         }
         var oldOrder = levels.slice();
         levels.sort(function(a, b) {
@@ -110,7 +109,7 @@
         for (i = 0; i < levels.Count; ++i) {
             var level = levels[i];
             if (oldOrder.IndexOf(level) != i) {
-                StoreLevel(i + 1, level.StartDelay, level.Columns);
+                storeLevel(i + 1, level.StartDelay, level.Columns);
             }
         }
     }
@@ -121,7 +120,7 @@
     
     function parseLevel(data) {
         var columnLocation = COLUMN_X_OFFSET,
-            startDelay = data["startDelay"];
+            startDelay = data.startDelay;
         columns = [];
 
         levelStartDelay = startDelay ? startDelay : 0;
@@ -129,9 +128,9 @@
         for (var c = 0; c < data.columns.length; ++c) {
             var columnData = data.columns[c],
                 tileLocation = COLUMN_Y_OFFSET,
-                column = new TILES.Column(columnLocation, tileLocation, columnData["locked"] == "True");
+                column = new TILES.Column(columnLocation, tileLocation, columnData.locked == "True");
             for (var t = 0; t < columnData.tiles.length; ++t) {
-                column.add(new TILES.Tile(columnData.tiles[t]["type"], columnLocation, tileLocation));
+                column.add(new TILES.Tile(columnData.tiles[t].type, columnLocation, tileLocation));
                 tileLocation += TILES.SIZE;
             }
             columns.push(column);
@@ -192,7 +191,7 @@
     }
 
     function zitSpawnInterval() {
-        if (zits.length == 0 && levelStartDelay > 0) {
+        if (zits.length === 0 && levelStartDelay > 0) {
             return levelStartDelay;
         }
         return Math.max(MIN_SPAWN_INTERVAL, Math.pow(LEVEL_SPAWN_FACTOR, currentLevel - 1) * BASE_SPAWN_INTERVAL * Math.pow(SPAWN_RATE_FACTOR, spawnRateFactor));
@@ -236,7 +235,7 @@
     }
 
     function updateInstruction(elapsed) {
-        if (keyboardState.keysDown() != 0 || touchState.touches.length > 0) {
+        if (keyboardState.keysDown() !== 0 || touchState.touches.length > 0) {
             if (instruction != Instruction.Start) {
                 if(currentLevel != NO_LEVEL) {
                     if (!checkSwitchLevel()) {
@@ -262,16 +261,16 @@
 
     function updateSelectedColumn() {
         if (isKeyPress(Keys.Left)) {
-            for (var column = selectedColumn - 1; column > 0; --column) {
-                if (!columns[column].locked) {
-                    setSelectedColumn(column);
+            for (var toLeft = selectedColumn - 1; toLeft > 0; --toLeft) {
+                if (!columns[toLeft].locked) {
+                    setSelectedColumn(toLeft);
                     break;
                 }
             }
         } else if (isKeyPress(Keys.Right)) {
-            for (var column = selectedColumn + 1; column < columns.length; ++column) {
-                if (!columns[column].locked) {
-                    setSelectedColumn(column);
+            for (var toRight = selectedColumn + 1; toRight < columns.length; ++toRight) {
+                if (!columns[toRight].locked) {
+                    setSelectedColumn(toRight);
                     break;
                 }
             }
@@ -394,9 +393,9 @@
         for (var i = 0; i < columns.length; ++i) {
             var column = columns[i],
                 delta = column.update(elapsed);
-            if (columnsMoveZits && delta != 0) {
-                for (var z = 0; z < zits.length; ++z) {
-                    var zit = zits[z];
+            if (columnsMoveZits && delta !== 0) {
+                for (var t = 0; t < zits.length; ++t) {
+                    var zit = zits[t];
                     if (zit.contactTile() !== null && zit.contactTile().left == column.left) {
                         zit.shiftBy(delta);
                     }
@@ -523,7 +522,7 @@
         }
         context.drawImage(levelFrame, 0, 0);
         
-        if (columns.length == 0) {
+        if (columns.length === 0) {
             context.restore();
             return;
         }
