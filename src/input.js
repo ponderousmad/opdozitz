@@ -1,7 +1,7 @@
 var INPUT = (function (LINEAR) {
     "use strict";
 
-    function KeyboardState(element) {
+    function KeyboardState(element, capture) {
         this.pressed = {};
         this.lastPressed = {};
         var self = this;
@@ -10,11 +10,17 @@ var INPUT = (function (LINEAR) {
             element.onkeydown = function (e) {
                 e = e || window.event;
                 self.pressed[e.keyCode] = true;
+                if (capture) {
+                    e.preventDefault();
+                }
             };
 
             element.onkeyup = function (e) {
                 e = e || window.event;
                 delete self.pressed[e.keyCode];
+                if (capture) {
+                    e.preventDefault();
+                }
             };
         }
     }
@@ -24,7 +30,7 @@ var INPUT = (function (LINEAR) {
     };
 
     KeyboardState.prototype.wasKeyPressed = function (keyCode) {
-        return this.pressed[keyCode] ? !this.wasKeyPressed[keyCode] : false;
+        return this.pressed[keyCode] ? !this.lastPressed[keyCode] : false;
     };
 
     KeyboardState.prototype.isShiftDown = function () {

@@ -55,8 +55,7 @@
         spawnRateFactor = 0,
         levelStartDelay = 0,
     
-        keyboardState = new INPUT.KeyboardState(window),
-        lastKeyboardState = keyboardState.clone(),
+        keyboardState = new INPUT.KeyboardState(window, true),
         
         Keys = {
             Up : 38,
@@ -213,11 +212,11 @@
     }
 
     function isKeyPress(key) {
-        return keyboardState.isKeyDown(key) && !lastKeyboardState.isKeyDown(key);
+        return keyboardState.wasKeyPressed(key);
     }
 
     function isAsciiPress(key) {
-        return keyboardState.isAsciiDown(key) && !lastKeyboardState.isAsciiDown(key);
+        return keyboardState.wasAsciiPressed(key);
     }
    
     function checkSwitchLevel() {
@@ -450,7 +449,7 @@
             }
         }
 
-        lastKeyboardState = keyboardState.clone();
+        keyboardState.postUpdate();
         lastTime = now;
     }
 
