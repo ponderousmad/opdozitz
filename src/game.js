@@ -56,6 +56,8 @@
         levelStartDelay = 0,
     
         keyboardState = new INPUT.KeyboardState(window, true),
+        touchState = null,
+        touchDown = null,
         
         Keys = {
             Up : 38,
@@ -234,7 +236,7 @@
     }
 
     function updateInstruction(elapsed) {
-        if (keyboardState.keysDown() != 0) {
+        if (keyboardState.keysDown() != 0 || touchState.touches.length > 0) {
             if (instruction != Instruction.Start) {
                 if(currentLevel != NO_LEVEL) {
                     if (!checkSwitchLevel()) {
@@ -272,6 +274,19 @@
                     setSelectedColumn(column);
                     break;
                 }
+            }
+        }
+        
+        if (touchDown === null && touchState.touches.length > 0) {
+            var touch = touchState.touches[0];
+            var x = touch.clientX;
+            for (var c = 0; c < columns.length; ++c) {
+                if (!columns[c].locked) {
+                    if (columns[c].inColumn(x)) {
+                        setSelectedColumn(c);
+                    }
+                }
+                
             }
         }
     }
@@ -549,6 +564,8 @@
         console.log("window.onload", e, Date.now());
         var canvas = document.getElementById("canvas"),
             context = canvas.getContext("2d");
+    
+        touchState = new INPUT.TouchState(canvas);
     
         loadLevel(MIN_LEVEL);
 
