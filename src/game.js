@@ -16,6 +16,8 @@
         MIN_LEVEL = 1,
         MAX_LEVEL = 25,
         NO_LEVEL = -1,
+        ZOOM_TOUCH_LOCATION = new LINEAR.Vector(740, 540),
+        ZOOM_TOUCH_SIZE = 50,
         ALLOW_EDITS = true,
     
         Instruction = {
@@ -58,6 +60,7 @@
         keyboardState = new INPUT.KeyboardState(window, true),
         touchState = null,
         touchDown = null,
+        zoomTouch = null,
         
         Keys = {
             Up : 38,
@@ -151,6 +154,7 @@
             request = new XMLHttpRequest();
         
         currentLevel = NO_LEVEL;
+        zoom = false;
         
         request.open("GET", resource, true);
         request.responseType = "text";
@@ -344,6 +348,33 @@
     function canMoveCurrent() {
         return canMoveColumn(columns[selectedColumn]);
     }
+    
+    function inZoomTouch(x, y) {       
+        if (x < ZOOM_TOUCH_LOCATION.x || (ZOOM_TOUCH_LOCATION.x + ZOOM_TOUCH_SIZE) < x) {
+            return;
+        }
+        
+        if (y < ZOOM_TOUCH_LOCATION.y || (ZOOM_TOUCH_LOCATION.y + ZOOM_TOUCH_SIZE) < y) {
+            return;
+        }
+        
+        return true;
+    }
+    
+    function touchedZoomToggle() {        
+        if (zoomTouch !== null) {
+            if (touchState.getTouch(zoomTouch) === null) {
+                zoomTouch = null;
+            }
+        } else if (touchState.touches.length > 0) {
+            var touch = touchState.touches[0];
+            if (inZoomTouch(touch.clientX, touch.clientY)) {
+                zoomTouch = touch.identifier;
+                return true;
+            }
+        }
+        return false;
+    }
 
     function updateGameplay(elapsed) {
         if (keyboardState.isKeyDown(Keys.Up)) {
@@ -370,7 +401,7 @@
             resetLevel(!keepTiles);
         }
 
-        if (isKeyPress(Keys.Space)) {
+        if (isKeyPress(Keys.Space) || touchedZoomToggle()) {
             zoom = !zoom;
         }
         var checkColumns = columns;
@@ -506,6 +537,24 @@
         context.fillText(text, left + width / 2, top);
     }
     
+    function drawTouchControls(context) {
+        var left = ZOOM_TOUCH_LOCATION.x,
+            top = ZOOM_TOUCH_LOCATION.y,
+            BORDER = 2;
+
+        context.textAlign = "center";
+        context.fillStyle = zoom ? "rgba(0,0,255,0.25)" : "rgba(0,255,0,0.25)";
+        context.strokeStyle = zoom ? "rgba(0,0,255,0.5)" : "rgba(0,255,0,0.5)";
+        context.lineWidth = BORDER;
+       
+        context.strokeRect(left + BORDER, top + BORDER, ZOOM_TOUCH_SIZE - 2 * BORDER, ZOOM_TOUCH_SIZE - 2 * BORDER);
+        context.fillRect(left, top, ZOOM_TOUCH_SIZE, ZOOM_TOUCH_SIZE);
+        
+        context.fillStyle = "rgba(0,0,0,0.5)";
+        drawTextCentered(context, "16px monospace", "Go", top + 21, left, ZOOM_TOUCH_SIZE);
+        drawTextCentered(context, "16px monospace", zoom ? "Slow" : "Fast", top + 36, left, ZOOM_TOUCH_SIZE);
+    }
+    
     function draw(context) {
         if (!imageBatch.loaded) {
             return;
@@ -577,7 +626,10 @@
 
         if (instruction !== null) {
             context.drawImage(instructions[instruction], 0, 0);
+        } else if (window.ontouchstart !== undefined) {
+            drawTouchControls(context);
         }
+
         context.restore();
     }
     
